@@ -89,25 +89,26 @@
     const keywordsNorm = qa.keywords.map(normalize);
 
     // 우선순위 계층: 제목(질문/주제) > 키워드 > 답변
-    // - 제목/주제 매칭: 1000점대
-    // - 키워드 매칭: 500점대
-    // - 답변 본문만 매칭: 100점대
+    // 같은 tier 내에서는 매칭 빈도가 많을수록 점수가 높아져 더 위로 정렬됨
     for (const token of queryTokens) {
       if (!token) continue;
+      const tokenRe = new RegExp(escapeRegex(token), 'g');
 
-      // [Tier 1] 영상 주제 또는 질문(제목)에 있으면 최우선
-      if (topicNorm.includes(token)) score += 1000;
-      if (questionNorm.includes(token)) score += 1000;
+      // [Tier 1] 영상 주제 또는 질문(제목)에 있으면 최우선 (빈도 × 1000)
+      const topicHits = (topicNorm.match(tokenRe) || []).length;
+      const questionHits = (questionNorm.match(tokenRe) || []).length;
+      if (topicHits > 0) score += 1000 * topicHits;
+      if (questionHits > 0) score += 1000 * questionHits;
 
-      // [Tier 2] 키워드 배열 일치
+      // [Tier 2] 키워드 배열 일치 (여러 키워드 중복 매칭 시 누적)
       for (const kw of keywordsNorm) {
         if (kw === token) score += 500;
         else if (kw.includes(token) || token.includes(kw)) score += 300;
       }
 
-      // [Tier 3] 답변에만 언급
-      const occurrences = (answerNorm.match(new RegExp(escapeRegex(token), 'g')) || []).length;
-      if (occurrences > 0) score += 100 + Math.min(occurrences * 5, 50);
+      // [Tier 3] 답변에 언급 (빈도 가중치 강화)
+      const occurrences = (answerNorm.match(tokenRe) || []).length;
+      if (occurrences > 0) score += 100 + Math.min(occurrences * 10, 100);
 
       // 원장님 이름 일치 (제목 다음 우선순위)
       if (doctorNorm.includes(token)) score += 800;

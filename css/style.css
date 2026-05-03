@@ -58,11 +58,11 @@ button {
 }
 
 mark {
-  background: #FFF3A3;
-  color: inherit;
-  padding: 0 2px;
+  background: #E91E63;
+  color: #FFFFFF;
+  padding: 0 4px;
   border-radius: 3px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ============== Header ============== */
@@ -500,7 +500,17 @@ main {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px dashed var(--border);
+  max-height: 240px;          /* 약 8줄 분량, 그 이상이면 부드러운 스크롤 */
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
+.qa-card .tags::-webkit-scrollbar { width: 6px; }
+.qa-card .tags::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.qa-card .tags::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 .qa-card .tag {
   display: inline-block;
   padding: 3px 10px;
@@ -517,6 +527,17 @@ main {
   border-color: var(--secondary);
   color: var(--primary);
   background: var(--bg-soft);
+}
+.qa-card .tag.tag-match {
+  background: #E91E63;
+  border-color: #E91E63;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+.qa-card .tag.tag-match:hover {
+  background: #C2185B;
+  border-color: #C2185B;
+  color: #FFFFFF;
 }
 
 /* Action bar */
