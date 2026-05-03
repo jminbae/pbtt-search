@@ -829,7 +829,8 @@ main {
 }
 .doctor-hero-info {
   align-self: center;
-  padding: 0 16px 24px 0;
+  padding: 0 24px 24px 24px;
+  text-align: center;          /* 좌측 영역 안에서 가운데 정렬 */
 }
 .doctor-hero-photo-wrap {
   display: flex;
@@ -853,7 +854,7 @@ main {
   display: block;
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   background: transparent;
   border: none;
   padding: 0;
@@ -863,12 +864,13 @@ main {
   font-size: 28px;
   font-weight: 800;
   color: var(--primary);
-  margin: 0 0 14px;
+  margin: 0 0 22px;            /* 멘트와 간격 더 넉넉하게 */
   letter-spacing: -0.7px;
   line-height: 1.1;
-  display: flex;
+  display: inline-flex;        /* 가운데 정렬에서 자연스럽게 */
   align-items: baseline;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
 }
 .doctor-hero-name .title-tag {
@@ -882,7 +884,7 @@ main {
   color: var(--text);
   line-height: 1.7;
   max-width: 420px;
-  margin: 0;
+  margin: 0 auto;             /* 가운데 정렬 */
   white-space: pre-line;
 }
 
@@ -890,22 +892,25 @@ main {
   .doctor-hero {
     display: block;
     position: relative;
-    padding: 16px 0 0;
-    min-height: 220px;
+    padding: 12px 0 0;
+    min-height: 200px;
+    margin-bottom: 18px;
   }
   .doctor-hero-info {
-    padding: 0 150px 16px 4px;  /* 우하단 인물 자리 확보 */
-    text-align: left;
+    padding: 0 165px 14px 8px;   /* 우하단 인물 자리 확보 (인물 폭 늘림 반영) */
+    text-align: center;          /* 모바일도 텍스트 가운데 정렬 */
   }
   .doctor-hero-name {
     font-size: 22px;
-    margin-bottom: 10px;
+    margin-bottom: 14px;         /* 멘트와 간격 늘림 */
+    justify-content: center;
   }
   .doctor-hero-name .title-tag {
     font-size: 12px;
   }
   .doctor-hero-branch {
     font-size: 12px;
+    margin-bottom: 6px;
   }
   .doctor-hero-intro {
     font-size: 13.5px;
@@ -916,12 +921,12 @@ main {
     position: absolute;
     bottom: -1px;
     right: 0;
-    width: 145px;
+    width: 165px;                /* 145 → 165 살짝 키움 */
     height: auto;
   }
   .doctor-hero-photo {
-    max-width: 145px;
-    max-height: 200px;
+    max-width: 165px;
+    max-height: 220px;           /* 200 → 220 살짝 키움 */
   }
 }
 .doctor-qa-heading {
