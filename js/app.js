@@ -146,6 +146,29 @@
     setupChipsExpand();
   }
 
+  // 입력값에 매칭되는 칩만 보이게 필터링
+  function filterChips(query) {
+    const popular = $('#popular-chips');
+    const container = $('#chips-container');
+    if (!container) return;
+    const chips = container.querySelectorAll('.chip');
+    const norm = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(query || '');
+    let visible = 0;
+    chips.forEach(c => {
+      if (!norm) {
+        c.style.display = '';
+        visible++;
+        return;
+      }
+      const cn = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(c.dataset.query || '');
+      const match = cn.includes(norm) || norm.includes(cn);
+      c.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    // 매칭 칩 0개면 popular 영역 자체 숨김
+    if (popular) popular.style.display = (norm && visible === 0) ? 'none' : '';
+  }
+
   function setupChipsExpand() {
     const popular = $('#popular-chips');
     const chips = $('#chips-container');
@@ -868,7 +891,7 @@
       <header class="doctor-hero">
         <img class="doctor-hero-photo" src="${doctor.photo}" alt="${doctor.name} 원장" width="160" height="160">
         <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장</small></h1>
-        <div class="doctor-hero-branch">${escapeHtml(affiliation)} · 피부과 전문의</div>
+        <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
         <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
       </header>
       <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
@@ -979,7 +1002,9 @@
         runSearch(input.value.trim());
       });
       input.addEventListener('input', () => {
-        debouncedSearch(input.value.trim());
+        const q = input.value.trim();
+        filterChips(q);
+        debouncedSearch(q);
       });
     }
 
