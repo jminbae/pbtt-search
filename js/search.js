@@ -221,9 +221,13 @@
       g.items.push(r);
       g.totalScore += r.score;
     }
-    // 영상 내부는 qa.id 오름차순 (원본 영상 내 질문 순서)
+    // 영상 내부도 점수 desc (제목·키워드 매칭 글이 그룹 안에서도 위로 옴)
+    // 같은 점수면 qa.id 오름차순 (원본 순서)
     for (const g of groups.values()) {
-      g.items.sort((a, b) => a.qa.id - b.qa.id);
+      g.items.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.qa.id - b.qa.id;
+      });
     }
     return Array.from(groups.values()).sort((a, b) => {
       if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
