@@ -334,12 +334,20 @@ main {
     align-items: flex-start;
   }
   #results .col-left,
-  #results .col-right {
+  #results .col-right,
+  #pop-cards-wrap .col-left,
+  #pop-cards-wrap .col-right {
     flex: 1 1 0;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
+  }
+  #pop-cards-wrap {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
   }
   .qa-card {
     max-width: none;
