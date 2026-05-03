@@ -141,8 +141,14 @@
   function search(query) {
     const trimmed = (query || '').trim();
     if (!trimmed) {
-      // 빈 검색어 → 전체 Q&A를 영상 ID + 글 순서대로 반환
-      return ALL_QAS.map(qa => ({ qa, score: 1 }));
+      // 빈 검색어 → 영상 최신순(uploadDate desc), 같은 영상 내는 qa.id 순
+      return ALL_QAS
+        .slice()
+        .sort((a, b) => {
+          if (a.uploadDate !== b.uploadDate) return b.uploadDate.localeCompare(a.uploadDate);
+          return a.id - b.id;
+        })
+        .map(qa => ({ qa, score: 1 }));
     }
 
     const tokens = expandQuery(trimmed);
@@ -153,7 +159,12 @@
       if (sc > 0) results.push({ qa, score: sc });
     }
 
-    results.sort((a, b) => b.score - a.score || a.qa.id - b.qa.id);
+    // 점수 desc → 같은 점수면 최신 영상 우선
+    results.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.qa.uploadDate !== b.qa.uploadDate) return b.qa.uploadDate.localeCompare(a.qa.uploadDate);
+      return a.qa.id - b.qa.id;
+    });
     return results;
   }
 
@@ -190,23 +201,33 @@
   }
 
   // 결과를 영상별로 그룹핑 (쓰레드 렌더링용)
-  // 빈 검색어인 경우 영상 순서대로, 검색 결과인 경우 점수 합 기준으로 정렬
+  // 정렬: 점수 합 desc → 영상 업로드 최신 desc
   function groupByVideo(results) {
     const groups = new Map();
     for (const r of results) {
       const vid = r.qa.videoId;
       if (!groups.has(vid)) {
-        groups.set(vid, { videoId: vid, totalScore: 0, items: [] });
+        groups.set(vid, {
+          videoId: vid,
+          totalScore: 0,
+          items: [],
+          uploadDate: r.qa.uploadDate,
+        });
       }
       const g = groups.get(vid);
       g.items.push(r);
       g.totalScore += r.score;
     }
-    // 영상 내부는 q.id 오름차순 (원본 순서)
+    // 영상 내부는 qa.id 오름차순 (원본 영상 내 질문 순서)
     for (const g of groups.values()) {
       g.items.sort((a, b) => a.qa.id - b.qa.id);
     }
-    return Array.from(groups.values()).sort((a, b) => b.totalScore - a.totalScore || a.videoId - b.videoId);
+    return Array.from(groups.values()).sort((a, b) => {
+      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+      // 최신 영상 우선
+      if (a.uploadDate !== b.uploadDate) return b.uploadDate.localeCompare(a.uploadDate);
+      return a.videoId - b.videoId;
+    });
   }
 
   global.PBTT.search = search;
