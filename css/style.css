@@ -528,8 +528,13 @@ main {
   color: var(--primary);
   background: var(--bg-soft);
 }
-/* 카드 안 키워드 매칭 시: 카테고리 색은 별도 cat-* 클래스로 적용 */
-.qa-card .tag.tag-match { font-weight: 600; }
+/* 카드 안 키워드 매칭 시: 카테고리 없는(화이트리스트 외) 키워드는 기본 회색, 카테고리 있으면 cat-* 색으로 오버라이드 */
+.qa-card .tag.tag-match {
+  font-weight: 600;
+  background: #F5F5F5;
+  border-color: #BDBDBD;
+  color: #424242;
+}
 /* 기본 chip-match (카테고리 슬러그 없을 때 fallback) */
 .chip.chip-match {
   font-weight: 600;
