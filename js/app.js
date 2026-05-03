@@ -239,7 +239,7 @@
             </button>
             <button class="action-btn comment-btn" data-action="comments" aria-label="댓글">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span class="count comment-count"></span>
+              <span class="count comment-count">0</span>
             </button>
           </div>
           <button class="action-btn share-btn" data-action="share" aria-label="공유">
@@ -844,7 +844,7 @@
     ]));
 
     // 댓글 카운트 (Firebase 활성화된 경우)
-    $$('.comment-count').forEach(el => el.textContent = '');
+    $$('.comment-count').forEach(el => el.textContent = '0');
     if (firebaseEnabled) {
       try {
         for (const qaId of visibleIds) {
@@ -979,10 +979,15 @@
     const affiliation = `힐하우스피부과 ${shortBranch(doctor.branch)}`;
     root.innerHTML = `
       <header class="doctor-hero">
-        <img class="doctor-hero-photo" src="${doctor.photo}" alt="${doctor.name} 원장" width="160" height="160">
-        <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장님</small></h1>
-        <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
-        <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
+        <div class="doctor-hero-info">
+          <div class="doctor-hero-branch">🏥 ${escapeHtml(affiliation)}</div>
+          <h1 class="doctor-hero-name">${escapeHtml(doctor.name)}</h1>
+          <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
+        </div>
+        <div class="doctor-hero-photo-wrap">
+          <img class="doctor-hero-photo" src="images/doctors-large/${doctor.slug}.png" alt="${doctor.name} 원장" loading="eager"
+               onerror="this.onerror=null;this.src='${doctor.photo}'">
+        </div>
       </header>
       <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장님의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
       <section id="results"></section>

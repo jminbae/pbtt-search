@@ -817,46 +817,96 @@ main {
   color: var(--text-muted);
 }
 
-/* Single doctor hero */
+/* Single doctor hero — 좌측 텍스트 + 우측 누끼 인물 (ref 스타일) */
 .doctor-hero {
-  text-align: center;
-  padding: 24px 0 32px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+  padding: 32px 0 28px;
+  margin-bottom: 28px;
+  background: linear-gradient(135deg, #EAF4FA 0%, #F5F7FA 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+}
+.doctor-hero-info {
+  text-align: left;
+  padding: 0 8px 0 28px;
+}
+.doctor-hero-photo-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
 }
 .doctor-hero-photo {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid var(--white);
-  box-shadow: var(--shadow);
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.doctor-hero-branch {
+  display: inline-block;
+  padding: 5px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 500;
   margin-bottom: 14px;
 }
 .doctor-hero-name {
-  font-size: 24px;
+  font-size: 42px;
   font-weight: 800;
   color: var(--primary);
-  margin: 0 0 6px;
-  letter-spacing: -0.5px;
-}
-.doctor-hero-name small {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-.doctor-hero-branch {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 14px;
+  margin: 0 0 16px;
+  letter-spacing: -1.2px;
+  line-height: 1;
 }
 .doctor-hero-intro {
   font-size: 15px;
   color: var(--text);
   line-height: 1.7;
   max-width: 480px;
-  margin: 0 auto;
-  white-space: pre-line;  /* \n을 줄바꿈으로 렌더링 */
+  margin: 0;
+  white-space: pre-line;
+}
+
+@media (max-width: 700px) {
+  .doctor-hero {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 16px 20px;
+    text-align: center;
+  }
+  .doctor-hero-info {
+    text-align: center;
+    padding: 0;
+    order: 2;
+  }
+  .doctor-hero-photo-wrap {
+    order: 1;
+    min-height: 260px;
+  }
+  .doctor-hero-photo {
+    max-width: 220px;
+  }
+  .doctor-hero-name {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+  .doctor-hero-intro {
+    font-size: 14px;
+    margin: 0 auto;
+  }
 }
 .doctor-qa-heading {
   font-size: 16px;
