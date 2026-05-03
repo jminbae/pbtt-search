@@ -261,22 +261,25 @@ main {
   margin-bottom: 10px;
 }
 .popular .chips {
-  flex-wrap: nowrap;            /* 한 줄 유지 */
-  overflow-x: auto;             /* 가로 스크롤로 더 보기 */
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  justify-content: flex-start;  /* 시작점부터 정렬 (가운데 정렬은 스크롤과 안 맞음) */
-  padding-bottom: 4px;
-  scrollbar-width: thin;
+  max-height: 96px;     /* 약 3줄 */
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
-.popular .chips::-webkit-scrollbar { height: 5px; }
-.popular .chips::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
+.popular.expanded .chips {
+  max-height: 600px;
 }
-.popular .chips .chip { flex-shrink: 0; }   /* 칩이 줄어들지 않게 */
-.chips-more { display: none; }              /* 더보기 버튼은 스크롤로 대체 */
+.chips-more {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.chips-more:hover { background: var(--bg-soft); color: var(--primary); }
 .chips {
   display: flex;
   flex-wrap: wrap;
