@@ -525,14 +525,21 @@
 
   // ====== 액션 핸들러 ======
   document.addEventListener('click', async (e) => {
-    // 태그 클릭 → 검색
+    // 태그 클릭 → 검색 / 같은 검색어 재클릭 시 해제 (초기화)
     const tag = e.target.closest('.tag, .chip');
     if (tag && tag.dataset.query) {
       const q = tag.dataset.query;
       const input = $('#search-input');
       if (input) {
-        input.value = q;
-        runSearch(q);
+        const cur = input.value.trim();
+        if (cur === q) {
+          // 동일 검색어 재클릭 → 검색 해제
+          input.value = '';
+          runSearch('');
+        } else {
+          input.value = q;
+          runSearch(q);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // 다른 페이지에서 칩/태그 누르면 홈으로

@@ -261,25 +261,22 @@ main {
   margin-bottom: 10px;
 }
 .popular .chips {
-  max-height: 96px;     /* 약 3줄 */
-  overflow: hidden;
-  transition: max-height 0.3s ease;
+  flex-wrap: nowrap;            /* 한 줄 유지 */
+  overflow-x: auto;             /* 가로 스크롤로 더 보기 */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  justify-content: flex-start;  /* 시작점부터 정렬 (가운데 정렬은 스크롤과 안 맞음) */
+  padding-bottom: 4px;
+  scrollbar-width: thin;
 }
-.popular.expanded .chips {
-  max-height: 600px;
+.popular .chips::-webkit-scrollbar { height: 5px; }
+.popular .chips::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
 }
-.chips-more {
-  margin-top: 8px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition);
-}
-.chips-more:hover { background: var(--bg-soft); color: var(--primary); }
+.popular .chips .chip { flex-shrink: 0; }   /* 칩이 줄어들지 않게 */
+.chips-more { display: none; }              /* 더보기 버튼은 스크롤로 대체 */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -533,35 +530,19 @@ main {
   border-color: #F8BBD0;
   color: #C2185B;
   font-weight: 600;
-  animation: tag-bob 2.4s ease-in-out infinite;
-  box-shadow: 0 1px 3px rgba(233, 30, 99, 0.15);
 }
-.qa-card .tag.tag-match:nth-child(2n) { animation-delay: 0.4s; }
-.qa-card .tag.tag-match:nth-child(3n) { animation-delay: 0.8s; }
-.qa-card .tag.tag-match:nth-child(5n) { animation-delay: 1.2s; }
 .qa-card .tag.tag-match:hover {
   background: #FFD0DF;
   border-color: #F48FB1;
   color: #AD1457;
 }
-
-/* 매칭된 키워드 부드러운 떠오름 (버블처럼 가볍게) */
-@keyframes tag-bob {
-  0%, 100% { transform: translateY(0); box-shadow: 0 1px 3px rgba(233, 30, 99, 0.15); }
-  50%      { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(233, 30, 99, 0.25); }
-}
-/* 검색창 아래 인기 검색어 칩 매칭 시 같은 연분홍 강조 + 부드러운 떠오름 */
+/* 검색창 아래 인기 검색어 칩 매칭 시 같은 연분홍 강조 */
 .chip.chip-match {
   background: #FFE0EC;
   border-color: #F8BBD0;
   color: #C2185B;
   font-weight: 600;
-  animation: tag-bob 2.4s ease-in-out infinite;
-  box-shadow: 0 1px 3px rgba(233, 30, 99, 0.15);
 }
-.chip.chip-match:nth-child(2n) { animation-delay: 0.4s; }
-.chip.chip-match:nth-child(3n) { animation-delay: 0.8s; }
-.chip.chip-match:nth-child(5n) { animation-delay: 1.2s; }
 .chip.chip-match:hover {
   background: #FFD0DF;
   border-color: #F48FB1;
