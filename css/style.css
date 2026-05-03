@@ -324,23 +324,35 @@ main {
 /* 모바일/태블릿: 카드 가독성 폭 720, 가운데 정렬 */
 #results { max-width: 720px; margin-left: auto; margin-right: auto; }
 
-/* 데스크탑: 카드 단위 2열 grid (좌→우→좌→우 순서) */
+/* 데스크탑: 진짜 Masonry 레이아웃 (JS로 짧은 컬럼에 카드 분배) */
 @media (min-width: 900px) {
   #results {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 20px;
-    align-items: start;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
     max-width: 1080px;
+    align-items: flex-start;
+  }
+  #results .col-left,
+  #results .col-right {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   .qa-card {
     max-width: none;
     margin: 0;
+    cursor: pointer;
   }
+  .qa-card .answer.collapsed { cursor: pointer; }
   .load-sentinel {
-    grid-column: 1 / -1;
+    width: 100%;
+    flex-basis: 100%;
   }
 }
+.qa-card .answer.collapsed { cursor: pointer; }
 .video-group-header {
   display: flex;
   align-items: center;

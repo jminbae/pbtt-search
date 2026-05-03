@@ -306,6 +306,36 @@
   const PAGE_SIZE = 12;       // 한 번에 로드할 카드 수
   const _pager = { groups: [], cursor: 0, query: '', observer: null };
 
+  function isMasonryViewport() {
+    return window.innerWidth >= 900;
+  }
+
+  function ensureColumns(root) {
+    if (!isMasonryViewport()) return null;
+    let left = root.querySelector('.col-left');
+    let right = root.querySelector('.col-right');
+    if (!left || !right) {
+      root.innerHTML = '<div class="col-left"></div><div class="col-right"></div>';
+      left = root.querySelector('.col-left');
+      right = root.querySelector('.col-right');
+    }
+    return { left, right };
+  }
+
+  // 카드 HTML 배열을 masonry로 root에 분배 (데스크탑) 또는 단일 컬럼 (모바일)
+  function distributeCards(root, cardHtmls) {
+    root.innerHTML = '';
+    const cols = ensureColumns(root);
+    cardHtmls.forEach(html => {
+      if (cols) {
+        const target = cols.left.offsetHeight <= cols.right.offsetHeight ? cols.left : cols.right;
+        target.insertAdjacentHTML('beforeend', html);
+      } else {
+        root.insertAdjacentHTML('beforeend', html);
+      }
+    });
+  }
+
   function paginateRender(root, groups, totalCount, query) {
     // 이전 옵저버 정리
     if (_pager.observer) { _pager.observer.disconnect(); _pager.observer = null; }
@@ -313,6 +343,9 @@
     _pager.cursor = 0;
     _pager.query = query;
     root.innerHTML = '';
+
+    // 데스크탑: masonry 컬럼 div 준비
+    ensureColumns(root);
 
     // 임계치 이하면 한 번에 모두
     if (totalCount <= PAGE_THRESHOLD) {
@@ -351,31 +384,30 @@
     refreshCounts();
   }
 
-  // 그룹 단위로 누적 카드 수가 targetCount에 도달할 때까지 추가
-  // 그룹은 잘리지 않음 (ex: 4개 그룹이 있으면 통째로 포함)
+  // Masonry: 카드 단위로 짧은 컬럼에 추가 (자연스러운 흐름)
   function appendBatch(root, targetCount, beforeEl) {
+    const cols = ensureColumns(root);
     let added = 0;
-    let html = '';
     let stagger = 0;
     while (_pager.cursor < _pager.groups.length && added < targetCount) {
       const g = _pager.groups[_pager.cursor];
-      const cards = g.items.map((r) => {
-        const styled = cardHtml(r.qa, _pager.query)
+      g.items.forEach((r) => {
+        const cardHTML = cardHtml(r.qa, _pager.query)
           .replace('<article ', `<article style="animation-delay:${stagger * 50}ms" `);
         stagger++;
-        return styled;
-      }).join('');
-      html += `<section class="video-group" data-video-id="${g.videoId}"><div class="thread">${cards}</div></section>`;
+        if (cols) {
+          // 짧은 컬럼에 추가 (offsetHeight 측정으로 layout flush 강제)
+          const target = cols.left.offsetHeight <= cols.right.offsetHeight ? cols.left : cols.right;
+          target.insertAdjacentHTML('beforeend', cardHTML);
+        } else if (beforeEl && beforeEl.parentNode) {
+          beforeEl.insertAdjacentHTML('beforebegin', cardHTML);
+        } else {
+          root.insertAdjacentHTML('beforeend', cardHTML);
+        }
+      });
       added += g.items.length;
       _pager.cursor++;
     }
-    if (!html) return;
-    if (beforeEl && beforeEl.parentNode) {
-      beforeEl.insertAdjacentHTML('beforebegin', html);
-    } else {
-      root.insertAdjacentHTML('beforeend', html);
-    }
-    // 새로 추가된 카드의 좋아요 카운트 업데이트
     refreshCounts();
   }
 
@@ -441,10 +473,10 @@
       .filter(x => x.qa)
       .sort((a, b) => b.savedAt - a.savedAt);
 
-    root.innerHTML = items.map(({ qa }, idx) => {
-      const html = cardHtml(qa, '');
-      return html.replace('<article ', `<article style="animation-delay:${idx * 60}ms" `);
-    }).join('');
+    const cardHtmls = items.map(({ qa }, idx) =>
+      cardHtml(qa, '').replace('<article ', `<article style="animation-delay:${idx * 60}ms" `)
+    );
+    distributeCards(root, cardHtmls);
     refreshCounts();
   }
 
@@ -466,13 +498,23 @@
       return;
     }
 
-    // 더보기
+    // 더보기 버튼
     const more = e.target.closest('.toggle-more');
     if (more) {
       const card = more.closest('.qa-card');
       const ans = card.querySelector('.answer');
       ans.classList.toggle('collapsed');
       more.textContent = ans.classList.contains('collapsed') ? '더보기 ▾' : '접기 ▴';
+      return;
+    }
+
+    // 본문(answer) 클릭으로 펼치기 (링크/마크/버튼 등은 제외)
+    const collapsedAnswer = e.target.closest('.qa-card .answer.collapsed');
+    if (collapsedAnswer && !e.target.closest('a, button')) {
+      const card = collapsedAnswer.closest('.qa-card');
+      collapsedAnswer.classList.remove('collapsed');
+      const moreBtn = card.querySelector('.toggle-more');
+      if (moreBtn) moreBtn.textContent = '접기 ▴';
       return;
     }
 
@@ -879,13 +921,6 @@
       .filter(qa => qa.doctor === doctor.name)
       .sort((a, b) => b.uploadDate.localeCompare(a.uploadDate) || a.id - b.id);
 
-    const cards = qas.length === 0
-      ? `<div class="empty-state"><p>아직 등록된 Q&A가 없어요. 곧 만나보실 수 있습니다.</p></div>`
-      : qas.map((qa, i) => {
-          const html = cardHtml(qa, '');
-          return html.replace('<article ', `<article style="animation-delay:${i*60}ms" `);
-        }).join('');
-
     const affiliation = `힐하우스피부과 ${shortBranch(doctor.branch)}`;
     root.innerHTML = `
       <header class="doctor-hero">
@@ -895,8 +930,18 @@
         <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
       </header>
       <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장님의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
-      <section id="results">${cards}</section>
+      <section id="results"></section>
     `;
+
+    const resultsEl = root.querySelector('#results');
+    if (qas.length === 0) {
+      resultsEl.innerHTML = `<div class="empty-state"><p>아직 등록된 Q&A가 없어요. 곧 만나보실 수 있습니다.</p></div>`;
+    } else {
+      const cardHtmls = qas.map((qa, i) =>
+        cardHtml(qa, '').replace('<article ', `<article style="animation-delay:${i*60}ms" `)
+      );
+      distributeCards(resultsEl, cardHtmls);
+    }
     refreshCounts();
   }
 
