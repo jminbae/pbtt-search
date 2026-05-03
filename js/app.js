@@ -576,17 +576,21 @@
     if (tag && tag.dataset.query) {
       const q = tag.dataset.query;
       const input = $('#search-input');
+      // 카드 안 키워드 태그(.tag) 클릭 시에는 화면 위로 스크롤 (새 결과 처음부터 보게)
+      // 검색창 밑 인기 칩(.chip)은 이미 화면 위에 있으므로 스크롤 안 함
+      const isCardTag = tag.classList.contains('tag');
       if (input) {
         const cur = input.value.trim();
         if (cur === q) {
-          // 동일 검색어 재클릭 → 검색 해제
           input.value = '';
           runSearch('');
         } else {
           input.value = q;
           runSearch(q);
         }
-        // 칩/태그 클릭 시 자동 스크롤 제거 (사용자가 보던 위치 그대로 유지)
+        if (isCardTag) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       } else {
         // 다른 페이지에서 칩/태그 누르면 홈으로
         location.href = `./?q=${encodeURIComponent(q)}`;
