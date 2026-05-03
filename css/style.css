@@ -853,9 +853,10 @@ main {
 .doctor-hero-intro {
   font-size: 15px;
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.7;
   max-width: 480px;
   margin: 0 auto;
+  white-space: pre-line;  /* \n을 줄바꿈으로 렌더링 */
 }
 .doctor-qa-heading {
   font-size: 16px;

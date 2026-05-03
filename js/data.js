@@ -4,23 +4,23 @@
 
 const DOCTORS = {
   "권수현": { slug: "kwon-soohyun", name: "권수현", title: "피부과 전문의", branch: "수원점", photo: "images/doctors/kwon-soohyun.webp",
-    intro: "한 분 한 분의 피부건강에 대해 이해하고 책임질 수 있는 힐링 닥터가 되도록 노력하겠습니다." },
+    intro: "한 분 한 분의 피부를 깊이 이해하고\n피부 건강을 끝까지 책임지는\n힐링 닥터가 되겠습니다." },
   "김수형": { slug: "kim-soohyung", name: "김수형", title: "피부과 전문의", branch: "수원점", photo: "images/doctors/kim-soohyung.webp",
-    intro: "모든 분들께 건강한 피부와 함께 삶에 긍정적인 변화를 드릴 수 있는 주치의가 되겠습니다." },
+    intro: "건강한 피부를 넘어\n삶의 긍정적인 변화까지 드리는\n피부 주치의가 되겠습니다." },
   "박효진": { slug: "park-hyojin",  name: "박효진", title: "피부과 전문의", branch: "대구점 대표원장", photo: "images/doctors/park-hyojin.webp",
-    intro: "여러분의 피부건강과 외적 아름다움뿐 아니라 마음까지 치유될 수 있도록 정성껏 진료하겠습니다." },
+    intro: "피부 건강과 아름다움은 물론\n마음까지 치유될 수 있도록\n정성껏 진료하겠습니다." },
   "이도영": { slug: "lee-doyoung",  name: "이도영", title: "피부과 전문의", branch: "건대점 대표원장", photo: "images/doctors/lee-doyoung.webp",
-    intro: "진심 어린 치료와 꾸준한 연구로 난치성 피부질환으로 고통받는 환자들의 영원한 동반자가 되겠습니다." },
+    intro: "한 분 한 분의 피부를\n한 폭의 캔버스라 여기며\n고유한 아름다움을 찾아드리겠습니다." },
   "정한미": { slug: "jung-hanmi",   name: "정한미", title: "피부과 전문의", branch: "강남점", photo: "images/doctors/jung-hanmi.webp",
-    intro: "한 번 시술 후 잊혀지는 의사가 아닌, 피부에 대한 모든 것을 믿고 맡길 수 있는 피부 주치의가 되겠습니다." },
+    intro: "한 번 시술 후 잊히는 의사가 아닌\n피부의 모든 것을 믿고 맡길 수 있는\n평생 피부 주치의가 되겠습니다." },
   "고혜림": { slug: "go-hyerim",    name: "고혜림", title: "피부과 전문의", branch: "수원점", photo: "images/doctors/go-hyerim.webp",
-    intro: "환자분의 삶이 자신감 넘치는 피부로 더욱 당당히 빛날 수 있도록 항상 노력하겠습니다." },
+    intro: "자신감 넘치는 피부로\n환자분의 삶이 더 당당히 빛나도록\n늘 곁에서 노력하겠습니다." },
   "김종식": { slug: "kim-jongsik",  name: "김종식", title: "피부과 전문의", branch: "판교점", photo: "images/doctors/kim-jongsik.webp",
-    intro: "고객님들의 피부 고민을 공감하고 충분한 소통을 통해 개인별 적합한 스킨케어 솔루션을 제시합니다." },
+    intro: "피부 고민에 깊이 공감하고\n충분한 소통을 바탕으로\n개인별 맞춤 솔루션을 제시하겠습니다." },
   "배정민": { slug: "bae-jungmin",  name: "배정민", title: "피부과 전문의", branch: "강남점", photo: "images/doctors/bae-jungmin.webp",
-    intro: "진심 어린 치료와 꾸준한 연구로 백반증으로 고통받는 환자들의 영원한 동반자가 될 것을 약속합니다." },
+    intro: "진심 어린 치료와 꾸준한 연구로\n백반증으로 고통받는 환자분들의\n영원한 동반자가 되겠습니다." },
   "강현진": { slug: "kang-hyunjin", name: "강현진", title: "피부과 전문의", branch: "건대점", photo: "images/doctors/kang-hyunjin.webp",
-    intro: "면밀한 상담과 끊임없는 연구를 통해 환자분 개개인에게 가장 최적의 치료 방법을 찾아드리겠습니다." },
+    intro: "면밀한 상담과 끊임없는 연구로\n환자분 한 분 한 분께\n가장 알맞은 치료를 찾아드리겠습니다." },
 };
 
 // 동의어/오타 사전 (검색 시 정규화에 사용)
