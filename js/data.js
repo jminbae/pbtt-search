@@ -10,6 +10,7 @@ const DOCTORS = {
   "정한미": { slug: "jung-hanmi",   name: "정한미", title: "피부과 전문의", photo: "images/doctors/jung-hanmi.webp"   },
   "고혜림": { slug: "go-hyerim",    name: "고혜림", title: "피부과 전문의", photo: "images/doctors/go-hyerim.webp"    },
   "김종식": { slug: "kim-jongsik",  name: "김종식", title: "피부과 전문의", photo: "images/doctors/kim-jongsik.webp"  },
+  "배정민": { slug: "bae-jungmin",  name: "배정민", title: "피부과 전문의", photo: "images/doctors/bae-jungmin.webp"  },
 };
 
 // 동의어/오타 사전 (검색 시 정규화에 사용)
