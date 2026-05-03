@@ -843,14 +843,14 @@
     root.innerHTML = `
       <header class="doctors-header">
         <h2>피부과 전문의</h2>
-        <p class="doctors-sub">힐하우스피부과 원장님들이 직접 답변합니다</p>
+        <p class="doctors-sub">피부텐텐의 피부과 전문의들이 직접 답변합니다.</p>
       </header>
       <div class="doctor-grid">
         ${list.map((d, i) => `
           <a href="doctors.html?slug=${d.slug}" class="doctor-card" data-doctor-link style="animation-delay:${i*40}ms">
             <img class="doctor-photo" src="${d.photo}" alt="${d.name} 원장" loading="lazy">
             <div class="doctor-card-body">
-              <div class="doctor-card-name">${escapeHtml(d.name)} 원장</div>
+              <div class="doctor-card-name">${escapeHtml(d.name)}</div>
               <div class="doctor-card-title">피부과 전문의</div>
             </div>
           </a>

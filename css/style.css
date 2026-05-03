@@ -734,6 +734,10 @@ main {
   color: var(--text-secondary);
   margin: 0;
 }
+/* 원장 페이지는 main 폭을 더 넓게 (akd-members 스타일) */
+.page-doctors main { max-width: 1080px; }
+.page-doctors .site-header .header-inner { max-width: 1080px; }
+
 .doctor-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -742,6 +746,9 @@ main {
 }
 @media (min-width: 600px) {
   .doctor-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+@media (min-width: 900px) {
+  .doctor-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
 }
 .doctor-card {
   display: flex;
