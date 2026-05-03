@@ -528,17 +528,8 @@ main {
   color: var(--primary);
   background: var(--bg-soft);
 }
-.qa-card .tag.tag-match {
-  background: #FFE0EC;
-  border-color: #F8BBD0;
-  color: #C2185B;
-  font-weight: 600;
-}
-.qa-card .tag.tag-match:hover {
-  background: #FFD0DF;
-  border-color: #F48FB1;
-  color: #AD1457;
-}
+/* 카드 안 키워드 매칭 시: 카테고리 색은 별도 cat-* 클래스로 적용 */
+.qa-card .tag.tag-match { font-weight: 600; }
 /* 기본 chip-match (카테고리 슬러그 없을 때 fallback) */
 .chip.chip-match {
   font-weight: 600;
@@ -552,42 +543,49 @@ main {
   gap: 6px;
   margin-bottom: 12px;
 }
+.cat-tabs {
+  border-bottom: 1px solid var(--border);
+  gap: 8px 28px;
+  margin-bottom: 16px;
+  padding-bottom: 0;
+}
 .cat-tab {
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
-  background: #FAFAFA;
+  padding: 10px 4px;
+  border: none;
+  background: none;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--transition), border-color var(--transition);
+  border-radius: 0;
 }
-.cat-tab:hover { transform: translateY(-1px); }
+.cat-tab:hover { color: var(--primary); }
 
-/* 카테고리별 색상 - 탭 active 상태 */
-.cat-tab.cat-lifting.active   { background: #BBDEFB; border-color: #64B5F6; color: #0D47A1; }
-.cat-tab.cat-injection.active { background: #E1BEE7; border-color: #BA68C8; color: #4A148C; }
-.cat-tab.cat-condition.active { background: #FFCDD2; border-color: #E57373; color: #B71C1C; }
-.cat-tab.cat-homecare.active  { background: #C8E6C9; border-color: #81C784; color: #1B5E20; }
-.cat-tab.cat-cosmetic.active  { background: #FFE0B2; border-color: #FFB74D; color: #E65100; }
-.cat-tab.cat-other.active     { background: #E0E0E0; border-color: #9E9E9E; color: #424242; }
+/* 활성 탭: 카테고리별 색 밑줄 + 텍스트 색 (배경/박스 없음) */
+.cat-tab.cat-lifting.active   { color: #1565C0; border-bottom-color: #1565C0; background: none; }
+.cat-tab.cat-injection.active { color: #6A1B9A; border-bottom-color: #6A1B9A; background: none; }
+.cat-tab.cat-condition.active { color: #C62828; border-bottom-color: #C62828; background: none; }
+.cat-tab.cat-homecare.active  { color: #2E7D32; border-bottom-color: #2E7D32; background: none; }
+.cat-tab.cat-cosmetic.active  { color: #EF6C00; border-bottom-color: #EF6C00; background: none; }
+.cat-tab.cat-other.active     { color: #616161; border-bottom-color: #9E9E9E; background: none; }
 
-/* 카테고리별 칩 색상 (연한 톤) */
-.chip.chip-lifting   { background: #E3F2FD; border-color: #BBDEFB; color: #1565C0; }
-.chip.chip-injection { background: #F3E5F5; border-color: #E1BEE7; color: #6A1B9A; }
-.chip.chip-condition { background: #FFEBEE; border-color: #FFCDD2; color: #C62828; }
-.chip.chip-homecare  { background: #E8F5E9; border-color: #C8E6C9; color: #2E7D32; }
-.chip.chip-cosmetic  { background: #FFF3E0; border-color: #FFE0B2; color: #EF6C00; }
-.chip.chip-other     { background: #F5F5F5; border-color: #E0E0E0; color: #616161; }
-
-/* 매칭 강조 - 카테고리 색의 진한 버전 */
-.chip.chip-lifting.chip-match   { background: #90CAF9; border-color: #42A5F5; color: #0D47A1; }
-.chip.chip-injection.chip-match { background: #CE93D8; border-color: #AB47BC; color: #4A148C; }
-.chip.chip-condition.chip-match { background: #EF9A9A; border-color: #E57373; color: #B71C1C; }
-.chip.chip-homecare.chip-match  { background: #A5D6A7; border-color: #81C784; color: #1B5E20; }
-.chip.chip-cosmetic.chip-match  { background: #FFCC80; border-color: #FFB74D; color: #E65100; }
-.chip.chip-other.chip-match     { background: #BDBDBD; border-color: #9E9E9E; color: #212121; }
+/* 칩/태그 디폴트는 색 없음 (기본 흰 배경 + 회색 글씨, 기존 .chip/.tag 스타일 그대로) */
+/* 매칭 시에만 카테고리별 색 적용 - 검색창 밑 칩 + 카드 안 키워드 모두 동일 */
+.chip.chip-lifting.chip-match,
+.qa-card .tag.tag-match.cat-lifting   { background: #E3F2FD; border-color: #90CAF9; color: #1565C0; }
+.chip.chip-injection.chip-match,
+.qa-card .tag.tag-match.cat-injection { background: #F3E5F5; border-color: #CE93D8; color: #6A1B9A; }
+.chip.chip-condition.chip-match,
+.qa-card .tag.tag-match.cat-condition { background: #FFEBEE; border-color: #EF9A9A; color: #C62828; }
+.chip.chip-homecare.chip-match,
+.qa-card .tag.tag-match.cat-homecare  { background: #E8F5E9; border-color: #A5D6A7; color: #2E7D32; }
+.chip.chip-cosmetic.chip-match,
+.qa-card .tag.tag-match.cat-cosmetic  { background: #FFF3E0; border-color: #FFCC80; color: #EF6C00; }
+.chip.chip-other.chip-match,
+.qa-card .tag.tag-match.cat-other     { background: #F5F5F5; border-color: #BDBDBD; color: #424242; }
 
 /* Action bar */
 .qa-card .actions {

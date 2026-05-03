@@ -217,7 +217,7 @@
     const initLike = COUNTER_CACHE.has(qa.id) ? COUNTER_CACHE.get(qa.id) : (likes[qa.id] ? 1 : 0);
     const initRead = READ_CACHE.has(qa.id) ? READ_CACHE.get(qa.id) : (reads[qa.id] ? 1 : 0);
     const fmtCount = c => c == null ? '0' : (c > 999 ? `${(c/1000).toFixed(1)}k` : String(c));
-    // 검색어 토큰과 일치하는 키워드 식별 (tag-match 클래스로 핑크 강조)
+    // 검색어 토큰과 일치하는 키워드 식별 → 카테고리 색으로 강조
     const queryNorm = (query || '').trim().toLowerCase().replace(/\s+/g, '');
     const tags = qa.keywords.map(k => {
       const kNorm = k.toLowerCase().replace(/\s+/g, '');
@@ -226,7 +226,13 @@
         kNorm.includes(queryNorm) ||
         queryNorm.includes(kNorm)
       );
-      const cls = isMatch ? 'tag tag-match' : 'tag';
+      const cat = KEYWORD_CATEGORY[k];
+      const slug = cat ? CAT_SLUG[cat] : null;
+      let cls = 'tag';
+      if (isMatch) {
+        cls += ' tag-match';
+        if (slug) cls += ` cat-${slug}`;
+      }
       return `<span class="${cls}" data-query="${escapeHtml(k)}">${escapeHtml(k)}</span>`;
     }).join('');
 
