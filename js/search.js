@@ -4,7 +4,7 @@
 // =====================================================================
 
 (function (global) {
-  const { SYNONYMS, ALL_QAS, DOCTORS, HOT_IDS, PICK_IDS } = global.PBTT;
+  const { SYNONYMS, ALL_QAS, DOCTORS } = global.PBTT;
 
   // 모든 동의어 → 표준 키워드 역매핑 인덱스 생성
   const SYNONYM_INDEX = {};
@@ -104,9 +104,8 @@
         else if (kw.includes(token) || token.includes(kw)) score += 300;
       }
 
-      // [Tier 3] 답변 본문 매칭: 1회당 100점, 최대 400점 cap
-      const occurrences = (answerNorm.match(tokenRe) || []).length;
-      if (occurrences > 0) score += Math.min(occurrences * 100, 400);
+      // [Tier 3] 답변 본문 매칭: 등장 여부만 (빈도 무시), 100점
+      if (answerNorm.match(tokenRe)) score += 100;
 
       // 원장님 이름 일치
       if (doctorNorm.includes(token)) score += 800;
@@ -164,11 +163,7 @@
         totalScore += sc;
       }
       if (allMatch && totalScore > 0) {
-        // HOT/Pick 약간의 가산점 (제목 매칭 1000점에 비해 작음 - 동률 정렬에 영향)
-        let bonus = 0;
-        if (HOT_IDS && HOT_IDS.has(qa.id)) bonus += 80;
-        if (PICK_IDS && PICK_IDS.has(qa.id)) bonus += 80;
-        results.push({ qa, score: totalScore + bonus });
+        results.push({ qa, score: totalScore });
       }
     }
 
