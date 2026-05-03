@@ -142,6 +142,7 @@ mark {
 }
 .header-nav {
   display: flex;
+  align-items: center;
   gap: 2px;
 }
 .header-nav a {
@@ -160,8 +161,13 @@ mark {
 .header-nav a.active svg { stroke: var(--primary); }
 .header-nav a.nav-yt:hover { background: rgba(255, 0, 0, 0.06); color: #c00; }
 @media (max-width: 600px) {
+  .header-inner { padding: 10px 14px; gap: 8px; }
+  .logo { gap: 8px; }
+  .logo-mark { width: 32px; height: 32px; border-radius: 7px; }
+  .logo-name { font-size: 14px; }
+  .logo-tagline { display: none; }    /* 모바일에선 태그라인 숨김 */
   .header-nav { gap: 0; }
-  .header-nav a { padding: 8px; }
+  .header-nav a { padding: 7px; gap: 0; }
   .header-nav .nav-text { display: none; }
   .header-nav a svg { width: 20px; height: 20px; }
 }
