@@ -616,17 +616,10 @@ main {
 
 /* ====== HOT / 원장님 Pick 카드 강조 ====== */
 .qa-card { position: relative; }
-.qa-card.is-hot {
-  background: #FFFAFA;            /* 거의 흰색에 가까운 핑크 톤 */
-  --card-bg: #FFFAFA;             /* 답변 fade-out 그라데이션 색도 동일하게 */
-}
-.qa-card.is-pick {
-  background: #F8FBFE;            /* 거의 흰색에 가까운 하늘 톤 */
-  --card-bg: #F8FBFE;
-}
+.qa-card.is-hot { background: #FFF5F5; }                /* 아주 연한 붉은 배경 */
+.qa-card.is-pick { background: #F0F8FF; }               /* 아주 연한 하늘 배경 */
 .qa-card.is-hot.is-pick {
-  background: linear-gradient(135deg, #FFFAFA 0%, #F8FBFE 100%);
-  --card-bg: #FBFAFB;             /* 두 색의 중간 톤 */
+  background: linear-gradient(135deg, #FFF5F5 0%, #F0F8FF 100%);
 }
 .card-badge {
   position: absolute;
