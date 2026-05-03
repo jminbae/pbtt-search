@@ -577,11 +577,11 @@
     }
   });
 
-  // 더보기/펼침 글로벌 카운트 (한 브라우저당 글당 1회만 +1)
+  // 더보기/펼침 글로벌 카운트 (펼칠 때마다 +1, 같은 브라우저 중복 허용)
   function hitMoreCount(qaId) {
     if (!qaId) return;
+    // 본인 활동 표시는 유지 (인기글 점수 계산용 fallback)
     const hits = ls.get(STORAGE.MORE_HIT);
-    if (hits[qaId]) return;
     hits[qaId] = true;
     ls.set(STORAGE.MORE_HIT, hits);
     fetch(`${COUNTER_BASE}/hit/${COUNTER_NS}/qa-${qaId}-more`).then(r => r.ok ? r.json() : null).then(data => {
