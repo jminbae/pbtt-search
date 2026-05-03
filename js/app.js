@@ -543,7 +543,7 @@
           input.value = q;
           runSearch(q);
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 칩/태그 클릭 시 자동 스크롤 제거 (사용자가 보던 위치 그대로 유지)
       } else {
         // 다른 페이지에서 칩/태그 누르면 홈으로
         location.href = `./?q=${encodeURIComponent(q)}`;
