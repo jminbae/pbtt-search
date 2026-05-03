@@ -608,7 +608,7 @@
     const qa = ALL_QAS.find(q => q.id === qaId);
     const shareData = {
       title: qa ? qa.question : '피부텐텐 Q&A',
-      text: qa ? `${qa.question}\n— 피부텐텐 Q&A (피부가 예뻐지는 10분)` : '피부텐텐 Q&A — 피부가 예뻐지는 10분',
+      text: qa ? `${qa.question}\n— 피부텐텐 Q&A (피부가 예뻐지는 10분)` : '피부텐텐 Q&A — 피부과 전문의가 답하는, 피부가 예뻐지는 모든 이야기',
       url
     };
 
@@ -853,7 +853,7 @@
       const hero = $('#hero');
       if (hero) hero.style.display = '';
       // 메타 복원
-      document.title = '피부텐텐 Q&A — 피부가 예뻐지는 10분';
+      document.title = '피부텐텐 Q&A — 피부과 전문의가 답하는, 피부가 예뻐지는 모든 이야기';
       renderResults(q);
     }
   }
