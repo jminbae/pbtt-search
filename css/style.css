@@ -164,7 +164,7 @@ mark {
   .header-inner { padding: 10px 14px; gap: 8px; }
   .logo { gap: 8px; }
   .logo-mark { width: 32px; height: 32px; border-radius: 7px; }
-  .logo-name { font-size: 14px; }
+  .logo-name { font-size: 15.5px; }
   .logo-tagline { display: none; }    /* 모바일에선 태그라인 숨김 */
   .header-nav { gap: 0; }
   .header-nav a { padding: 7px; gap: 0; }
@@ -520,13 +520,18 @@ main {
   padding-top: 12px;
   border-top: 1px solid var(--border);
 }
+.qa-card .actions-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .qa-card .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: var(--text-muted);
-  padding: 6px 10px;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   transition: all var(--transition);
 }
@@ -534,8 +539,8 @@ main {
 .qa-card .action-btn.read-stat { cursor: default; pointer-events: none; }
 .qa-card .action-btn.active { color: #e0245e; }
 .qa-card .action-btn.saved { color: #f5a623; }
-.qa-card .action-btn svg { width: 16px; height: 16px; }
-.qa-card .action-btn .count { font-size: 12px; font-variant-numeric: tabular-nums; }
+.qa-card .action-btn svg { width: 22px; height: 22px; }
+.qa-card .action-btn .count { font-size: 14px; font-variant-numeric: tabular-nums; }
 
 /* YouTube original link */
 .qa-card .yt-original {
