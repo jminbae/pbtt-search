@@ -539,18 +539,55 @@ main {
   border-color: #F48FB1;
   color: #AD1457;
 }
-/* 검색창 아래 인기 검색어 칩 매칭 시 같은 연분홍 강조 */
+/* 기본 chip-match (카테고리 슬러그 없을 때 fallback) */
 .chip.chip-match {
-  background: #FFE0EC;
-  border-color: #F8BBD0;
-  color: #C2185B;
   font-weight: 600;
 }
-.chip.chip-match:hover {
-  background: #FFD0DF;
-  border-color: #F48FB1;
-  color: #AD1457;
+
+/* ====== 카테고리 탭 ====== */
+.cat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
 }
+.cat-tab {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: #FAFAFA;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.cat-tab:hover { transform: translateY(-1px); }
+
+/* 카테고리별 색상 - 탭 active 상태 */
+.cat-tab.cat-lifting.active   { background: #BBDEFB; border-color: #64B5F6; color: #0D47A1; }
+.cat-tab.cat-injection.active { background: #E1BEE7; border-color: #BA68C8; color: #4A148C; }
+.cat-tab.cat-condition.active { background: #FFCDD2; border-color: #E57373; color: #B71C1C; }
+.cat-tab.cat-homecare.active  { background: #C8E6C9; border-color: #81C784; color: #1B5E20; }
+.cat-tab.cat-cosmetic.active  { background: #FFE0B2; border-color: #FFB74D; color: #E65100; }
+.cat-tab.cat-other.active     { background: #E0E0E0; border-color: #9E9E9E; color: #424242; }
+
+/* 카테고리별 칩 색상 (연한 톤) */
+.chip.chip-lifting   { background: #E3F2FD; border-color: #BBDEFB; color: #1565C0; }
+.chip.chip-injection { background: #F3E5F5; border-color: #E1BEE7; color: #6A1B9A; }
+.chip.chip-condition { background: #FFEBEE; border-color: #FFCDD2; color: #C62828; }
+.chip.chip-homecare  { background: #E8F5E9; border-color: #C8E6C9; color: #2E7D32; }
+.chip.chip-cosmetic  { background: #FFF3E0; border-color: #FFE0B2; color: #EF6C00; }
+.chip.chip-other     { background: #F5F5F5; border-color: #E0E0E0; color: #616161; }
+
+/* 매칭 강조 - 카테고리 색의 진한 버전 */
+.chip.chip-lifting.chip-match   { background: #90CAF9; border-color: #42A5F5; color: #0D47A1; }
+.chip.chip-injection.chip-match { background: #CE93D8; border-color: #AB47BC; color: #4A148C; }
+.chip.chip-condition.chip-match { background: #EF9A9A; border-color: #E57373; color: #B71C1C; }
+.chip.chip-homecare.chip-match  { background: #A5D6A7; border-color: #81C784; color: #1B5E20; }
+.chip.chip-cosmetic.chip-match  { background: #FFCC80; border-color: #FFB74D; color: #E65100; }
+.chip.chip-other.chip-match     { background: #BDBDBD; border-color: #9E9E9E; color: #212121; }
 
 /* Action bar */
 .qa-card .actions {

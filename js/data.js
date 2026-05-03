@@ -7842,17 +7842,42 @@ const VIDEOS = [
   },
 ];
 
-// 인기 검색어 (홈 칩) - 안티에이징/시술 키워드 화이트리스트 67개 고정
-// 새 영상이 추가돼도 칩 목록은 유지됨 (관리 키워드만 노출)
-const POPULAR_QUERIES = [
-  "리프팅", "보톡스", "모공", "울쎄라", "써마지", "비타민C", "홈케어", "스킨부스터", "필러", "부작용",
-  "쥬베룩", "스컬트라", "선크림", "레티놀", "리쥬란", "지성피부", "자외선차단", "잔주름", "고주파", "항산화",
-  "스킨보톡스", "팔자주름", "동안", "볼륨", "히알루론산", "나이아신아마이드", "광노화", "기미", "레티노이드", "마리오네트",
-  "다운타임", "통증", "레디어스", "쥬브젠", "피부결", "미백", "결절", "힐로웨이브", "사각턱", "30대",
-  "리투오", "탄력", "판테놀", "홍조", "PDRN", "민감성피부", "자외선차단제", "잡티", "건성피부", "땅콩형얼굴",
-  "레티날", "민감성", "세르프", "속건조", "입가주름", "티타늄", "피지", "흉터", "결혼식", "백반증",
-  "콜라겐부스터", "클렌저", "가성비", "광대", "광피부", "눈가주름"
-];
+// 인기 검색어: 카테고리별 화이트리스트. 각 카테고리 내부는 빈도순 자동 정렬.
+const POPULAR_CATEGORIES = {
+  "리프팅":   ["리프팅", "울쎄라", "써마지", "고주파", "세르프", "티타늄"],
+  "주사시술": ["보톡스", "스킨부스터", "필러", "쥬베룩", "스컬트라", "리쥬란", "스킨보톡스",
+              "레디어스", "쥬브젠", "힐로웨이브", "리투오", "콜라겐부스터"],
+  "피부증상": ["모공", "지성피부", "잔주름", "팔자주름", "광노화", "기미", "마리오네트", "결절",
+              "사각턱", "홍조", "민감성피부", "잡티", "건성피부", "땅콩형얼굴", "민감성",
+              "속건조", "입가주름", "피지", "흉터", "백반증", "광대", "눈가주름"],
+  "홈케어":   ["홈케어", "선크림", "자외선차단", "자외선차단제", "클렌저"],
+  "화장품":   ["비타민C", "레티놀", "항산화", "히알루론산", "나이아신아마이드",
+              "레티노이드", "판테놀", "PDRN", "레티날"],
+  "기타":     ["부작용", "동안", "볼륨", "다운타임", "통증", "피부결", "미백", "탄력",
+              "30대", "결혼식", "가성비", "광피부", "위고비"],
+};
+
+// 카테고리 내부를 등장 빈도 desc로 정렬
+(function () {
+  const counts = {};
+  for (const v of VIDEOS) {
+    for (const qa of v.qas) {
+      for (const kw of (qa.keywords || [])) counts[kw] = (counts[kw] || 0) + 1;
+    }
+  }
+  for (const cat of Object.keys(POPULAR_CATEGORIES)) {
+    POPULAR_CATEGORIES[cat].sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
+  }
+})();
+
+// 평탄화된 인기 검색어 (호환성)
+const POPULAR_QUERIES = Object.values(POPULAR_CATEGORIES).flat();
+
+// 키워드 → 카테고리 역매핑 (카드 내 키워드 색상 결정용)
+const KEYWORD_CATEGORY = {};
+for (const [cat, kws] of Object.entries(POPULAR_CATEGORIES)) {
+  for (const k of kws) KEYWORD_CATEGORY[k] = cat;
+}
 
 // 평탄화된 Q&A 배열 (검색 인덱스용)
 const ALL_QAS = VIDEOS.flatMap(v =>
@@ -7867,5 +7892,5 @@ const ALL_QAS = VIDEOS.flatMap(v =>
 );
 
 if (typeof window !== 'undefined') {
-  window.PBTT = { DOCTORS, VIDEOS, SYNONYMS, POPULAR_QUERIES, ALL_QAS };
+  window.PBTT = { DOCTORS, VIDEOS, SYNONYMS, POPULAR_QUERIES, POPULAR_CATEGORIES, KEYWORD_CATEGORY, ALL_QAS };
 }

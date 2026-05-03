@@ -3,7 +3,10 @@
 // =====================================================================
 
 (function () {
-  const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, search, highlight, groupByVideo } = window.PBTT;
+  const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, POPULAR_CATEGORIES, KEYWORD_CATEGORY, search, highlight, groupByVideo } = window.PBTT;
+  const CAT_LIST = ["리프팅", "주사시술", "피부증상", "홈케어", "화장품", "기타"];
+  const CAT_SLUG = { "리프팅":"lifting", "주사시술":"injection", "피부증상":"condition", "홈케어":"homecare", "화장품":"cosmetic", "기타":"other" };
+  let _activeCategory = "리프팅";
 
   // ====== Firebase 설정 (사용자가 README에 따라 채워 넣음) ======
   // 비어 있으면 댓글 기능은 "준비 중"으로 표시됩니다.
@@ -131,14 +134,40 @@
 
   // ====== 인기 검색어 칩 ======
   function renderChips() {
+    renderCategoryTabs();
+    renderCategoryChips(_activeCategory);
+  }
+
+  function renderCategoryTabs() {
+    const tabs = $('#cat-tabs');
+    if (!tabs) return;
+    tabs.innerHTML = CAT_LIST.map(cat => {
+      const slug = CAT_SLUG[cat];
+      const active = cat === _activeCategory ? ' active' : '';
+      return `<button type="button" class="cat-tab cat-${slug}${active}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>`;
+    }).join('');
+    tabs.addEventListener('click', e => {
+      const btn = e.target.closest('.cat-tab');
+      if (!btn) return;
+      _activeCategory = btn.dataset.cat;
+      renderCategoryTabs();
+      renderCategoryChips(_activeCategory);
+    }, { once: true });   // 매 렌더마다 새로 등록
+  }
+
+  function renderCategoryChips(cat) {
     const container = $('#chips-container');
     if (!container) return;
-    container.innerHTML = POPULAR_QUERIES.map(q =>
-      `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+    const slug = CAT_SLUG[cat] || 'other';
+    const list = POPULAR_CATEGORIES[cat] || [];
+    container.className = `chips chips-${slug}`;
+    container.innerHTML = list.map(q =>
+      `<button type="button" class="chip chip-${slug}" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
     ).join('');
-    // 칩 클릭은 document 레벨 핸들러(.tag, .chip 통합)에서 처리 - 중복 제거
-    // 칩이 많으면 "더보기" 토글
     setupChipsExpand();
+    // 검색어가 있다면 매칭 강조 동기화
+    const input = $('#search-input');
+    if (input) highlightChips(input.value.trim());
   }
 
   // 검색어와 일치하는 칩만 연분홍 강조 (display는 건드리지 않음 - 칩은 항상 그대로 노출)
