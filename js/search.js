@@ -82,22 +82,20 @@
     if (!rawNorm) return 0;
 
     let score = 0;
-    const topicNorm = normalize(qa.videoTopic);
     const questionNorm = normalize(qa.question);
     const answerNorm = normalize(qa.answer);
     const doctorNorm = normalize(qa.doctor);
     const keywordsNorm = qa.keywords.map(normalize);
 
-    // 우선순위 계층: 제목(질문/주제) > 키워드 > 답변
+    // 우선순위 계층: 질문(제목) > 키워드 > 답변
     // 같은 tier 내에서는 매칭 빈도가 많을수록 점수가 높아져 더 위로 정렬됨
+    // 영상 메타 topic은 제외 (영상 토픽이 키워드와 다른 경우가 많아 노이즈)
     for (const token of queryTokens) {
       if (!token) continue;
       const tokenRe = new RegExp(escapeRegex(token), 'g');
 
-      // [Tier 1] 영상 주제 또는 질문(제목)에 있으면 최우선 (빈도 × 1000)
-      const topicHits = (topicNorm.match(tokenRe) || []).length;
+      // [Tier 1] 질문(Q&A 제목)에 있으면 최우선 (빈도 × 1000)
       const questionHits = (questionNorm.match(tokenRe) || []).length;
-      if (topicHits > 0) score += 1000 * topicHits;
       if (questionHits > 0) score += 1000 * questionHits;
 
       // [Tier 2] 키워드 배열 일치 (여러 키워드 중복 매칭 시 누적)
@@ -110,20 +108,19 @@
       const occurrences = (answerNorm.match(tokenRe) || []).length;
       if (occurrences > 0) score += 50 + Math.min(occurrences * 5, 50);
 
-      // 원장님 이름 일치 (제목 다음 우선순위)
+      // 원장님 이름 일치
       if (doctorNorm.includes(token)) score += 800;
     }
 
-    // 보너스: 원본 검색어 전체가 제목에 정확히 들어가면 큰 가중치
+    // 보너스: 원본 검색어 전체가 질문에 정확히 들어가면 큰 가중치
     if (rawNorm.length >= 2) {
       if (questionNorm.includes(rawNorm)) score += 500;
-      if (topicNorm.includes(rawNorm)) score += 500;
     }
 
     // n-gram bigram fallback (오타/부분어 보강)
     if (score === 0 && rawNorm.length >= 2) {
       const queryBigrams = ngrams(rawNorm, 2);
-      const haystack = topicNorm + questionNorm + answerNorm + keywordsNorm.join('');
+      const haystack = questionNorm + answerNorm + keywordsNorm.join('');
       let hits = 0;
       for (const bg of queryBigrams) {
         if (haystack.includes(bg)) hits++;
