@@ -213,7 +213,7 @@
           <img class="avatar" src="${doc.photo}" alt="${doc.name} 원장 프로필" loading="lazy" width="44" height="44">
           <div class="doctor-info">
             <div class="doctor-name">
-              ${doctorHtml} 원장
+              ${doctorHtml} 원장님
               <span class="verified" title="피부과 전문의">✓</span>
             </div>
             <div class="doctor-meta">${doc.title} · ${escapeHtml(qa.videoTopic)} · ${fmtDate(qa.uploadDate)}</div>
@@ -843,7 +843,7 @@
     root.innerHTML = `
       <header class="doctors-header">
         <h2>피부과 전문의</h2>
-        <p class="doctors-sub">피부텐텐의 피부과 전문의들이 직접 답변합니다.</p>
+        <p class="doctors-sub">피부텐텐의 피부과 전문의들이 직접 답합니다.</p>
       </header>
       <div class="doctor-grid">
         ${list.map((d, i) => `
@@ -872,8 +872,8 @@
       root.innerHTML = `<div class="empty-state"><h3>원장님을 찾을 수 없어요</h3><p><a href="doctors.html">목록으로 돌아가기</a></p></div>`;
       return;
     }
-    document.title = `${doctor.name} 원장 | 피부텐텐 Q&A`;
-    setMeta('description', `${doctor.name} 원장 — ${doctor.intro || ''}`);
+    document.title = `${doctor.name} 원장님 | 피부텐텐 Q&A`;
+    setMeta('description', `${doctor.name} 원장님 — ${doctor.intro || ''}`);
 
     const qas = ALL_QAS
       .filter(qa => qa.doctor === doctor.name)
@@ -890,11 +890,11 @@
     root.innerHTML = `
       <header class="doctor-hero">
         <img class="doctor-hero-photo" src="${doctor.photo}" alt="${doctor.name} 원장" width="160" height="160">
-        <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장</small></h1>
+        <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장님</small></h1>
         <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
         <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
       </header>
-      <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
+      <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장님의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
       <section>${cards}</section>
     `;
     refreshCounts();
