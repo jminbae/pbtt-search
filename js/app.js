@@ -16,10 +16,17 @@
   let firebaseEnabled = false;
   let db = null;
 
+  // ====== 글로벌 좋아요 카운터 (무인증 무료 API) ======
+  // abacus.jasoncameron.dev: 한 번 hit하면 +1, get으로 조회. 한 브라우저당 글당 1회만 hit.
+  const COUNTER_NS = 'pbtt-search';
+  const COUNTER_BASE = 'https://abacus.jasoncameron.dev';
+  const COUNTER_CACHE = new Map(); // qaId -> count
+
   // ====== LocalStorage 헬퍼 ======
   const STORAGE = {
-    LIKES: 'pbtt_likes',     // {qaId: true}
-    SAVED: 'pbtt_saved',     // {qaId: timestamp}
+    LIKES: 'pbtt_likes',         // {qaId: true} - 본인 표시용
+    LIKES_HIT: 'pbtt_likes_hit', // {qaId: true} - abacus에 +1 호출했는지 (영구)
+    SAVED: 'pbtt_saved',         // {qaId: timestamp}
   };
   const ls = {
     get(key) {
@@ -240,30 +247,20 @@
       return;
     }
 
-    // 영상 그룹별 렌더링
+    // 영상 그룹별 렌더링 (영상 헤더 없이 쓰레드만)
+    let stagger = 0;
     root.innerHTML = groups.map(g => {
-      const v = VIDEOS.find(vv => vv.id === g.videoId);
-      const cards = g.items.map((r, idx) => {
+      const cards = g.items.map((r) => {
         const html = cardHtml(r.qa, query);
-        // 스태거 애니메이션
-        return html.replace('<article ', `<article style="animation-delay:${idx * 70}ms" `);
+        const styled = html.replace('<article ', `<article style="animation-delay:${stagger * 60}ms" `);
+        stagger++;
+        return styled;
       }).join('');
 
-      return `
-        <section class="video-group" data-video-id="${v.id}">
-          <header class="video-group-header">
-            <div>
-              <div class="topic-badge">📌 ${escapeHtml(v.topic)}</div>
-              <div class="video-meta">${fmtDate(v.uploadDate)} · Q&A ${g.items.length}개</div>
-            </div>
-            <a class="yt-link" href="${v.youtubeUrl}" target="_blank" rel="noopener">▶ 영상 보기</a>
-          </header>
-          <div class="thread">${cards}</div>
-        </section>
-      `;
+      return `<section class="video-group" data-video-id="${g.videoId}"><div class="thread">${cards}</div></section>`;
     }).join('');
 
-    // 좋아요/댓글 카운트 비동기 로드
+    // 글로벌 좋아요 카운트 비동기 로드
     refreshCounts();
   }
 
@@ -387,7 +384,7 @@
     }
   });
 
-  function handleLike(qaId, btn) {
+  async function handleLike(qaId, btn) {
     const likes = ls.get(STORAGE.LIKES);
     const newState = !likes[qaId];
     if (newState) likes[qaId] = true;
@@ -399,18 +396,32 @@
     btn.setAttribute('aria-pressed', newState);
     const svg = btn.querySelector('svg');
     if (svg) svg.setAttribute('fill', newState ? 'currentColor' : 'none');
-    showToast(newState ? '좋아요!' : '좋아요 취소');
 
-    // Firebase에도 기록 (선택)
-    if (firebaseEnabled) {
+    // 글로벌 카운터: 처음 좋아요 누를 때만 +1 (한 브라우저당 글당 1회)
+    const hits = ls.get(STORAGE.LIKES_HIT);
+    if (newState && !hits[qaId]) {
+      hits[qaId] = true;
+      ls.set(STORAGE.LIKES_HIT, hits);
       try {
-        const { doc, setDoc, increment, deleteField } = window._fs;
-        setDoc(doc(db, 'qa_likes', String(qaId)), {
-          count: increment(newState ? 1 : -1),
-          updatedAt: Date.now()
-        }, { merge: true }).then(refreshCounts);
-      } catch (e) { console.warn(e); }
+        const res = await fetch(`${COUNTER_BASE}/hit/${COUNTER_NS}/qa-${qaId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const cnt = data.value ?? data.count ?? 0;
+          COUNTER_CACHE.set(qaId, cnt);
+          updateLikeCount(qaId, cnt);
+        }
+      } catch (e) { console.warn('like hit failed', e); }
+    } else {
+      // 본인 좋아요 토글이지만 글로벌은 변하지 않음 → 캐시값 그대로 표시
+      updateLikeCount(qaId, COUNTER_CACHE.get(qaId));
     }
+  }
+
+  function updateLikeCount(qaId, count) {
+    const cnt = (count == null) ? '' : (count > 999 ? `${(count/1000).toFixed(1)}k` : String(count));
+    document.querySelectorAll(`.qa-card[data-qa-id="${qaId}"] .like-count`).forEach(el => {
+      el.textContent = cnt;
+    });
   }
 
   function handleSave(qaId, btn) {
@@ -427,23 +438,56 @@
     showToast(newState ? '저장했어요' : '저장을 취소했어요');
   }
 
-  async function handleShare(qaId) {
+  function handleShare(qaId) {
+    // user-gesture context 유지를 위해 async/await 사용 안 함
     const url = `${location.origin}${location.pathname.replace(/saved\.html$/, '')}?qa=${qaId}`;
     const qa = ALL_QAS.find(q => q.id === qaId);
     const shareData = {
-      title: qa ? qa.question : '피부텐텐 써치엔진',
-      text: qa ? qa.question : '피부과 전문의 Q&A 검색',
+      title: qa ? qa.question : '피부텐텐',
+      text: qa ? `${qa.question}\n— 피부텐텐 (피부가 예뻐지는 10분)` : '피부텐텐 — 피부가 예뻐지는 10분',
       url
     };
-    if (navigator.share) {
-      try { await navigator.share(shareData); return; } catch (e) { /* user cancelled */ }
+
+    // 모바일/지원 환경: OS 공유 시트
+    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+      navigator.share(shareData).catch((err) => {
+        // AbortError는 사용자가 취소한 것이므로 무시
+        if (err && err.name !== 'AbortError') {
+          // 시스템 공유 실패 시 클립보드로 폴백
+          copyToClipboard(url);
+        }
+      });
+      return;
     }
+
+    // 데스크톱 등 미지원 환경: 클립보드 복사
+    copyToClipboard(url);
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => showToast('🔗 링크가 복사되었어요'),
+        () => fallbackCopy(text)
+      );
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
     try {
-      await navigator.clipboard.writeText(url);
-      showToast('링크가 복사되었어요');
+      document.execCommand('copy');
+      showToast('🔗 링크가 복사되었어요');
     } catch {
-      prompt('링크 복사:', url);
+      prompt('링크 복사:', text);
     }
+    document.body.removeChild(ta);
   }
 
   function toggleComments(card) {
@@ -562,35 +606,50 @@
     } catch (e) { alert('삭제 실패: ' + e.message); }
   });
 
-  // ====== 좋아요/댓글 카운트 새로고침 ======
+  // ====== 좋아요 카운트 새로고침 (abacus API) ======
   async function refreshCounts() {
-    // 항상 본인 좋아요만 표시 (Firebase 없을 때)
-    $$('.like-btn').forEach(btn => {
-      const card = btn.closest('.qa-card');
-      const cnt = card.querySelector('.like-count');
-      if (cnt && !firebaseEnabled) cnt.textContent = '';
+    const visibleIds = $$('.qa-card').map(c => parseInt(c.dataset.qaId, 10));
+    // 캐시 우선 표시 → 실제 fetch
+    visibleIds.forEach(id => {
+      if (COUNTER_CACHE.has(id)) updateLikeCount(id, COUNTER_CACHE.get(id));
     });
-    $$('.comment-count').forEach(el => el.textContent = '');
 
-    if (!firebaseEnabled) return;
-    try {
-      const { collection, getDocs, query, where } = window._fs;
-      // 좋아요 카운트 일괄 조회
-      const visibleIds = $$('.qa-card').map(c => parseInt(c.dataset.qaId, 10));
-      for (const qaId of visibleIds) {
-        // 좋아요
-        const { doc, getDoc } = window._fs;
-        try {
-          const lsnap = await getDoc(doc(db, 'qa_likes', String(qaId)));
-          const cnt = lsnap.exists() ? (lsnap.data().count || 0) : 0;
-          const card = document.querySelector(`.qa-card[data-qa-id="${qaId}"]`);
-          if (card) {
-            const el = card.querySelector('.like-count');
-            if (el) el.textContent = cnt > 0 ? cnt : '';
-          }
-        } catch {}
-      }
-    } catch (e) { console.warn(e); }
+    // 가시 카드들의 카운트 병렬 조회
+    await Promise.allSettled(visibleIds.map(async (qaId) => {
+      try {
+        const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/qa-${qaId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const cnt = data.value ?? data.count ?? 0;
+          COUNTER_CACHE.set(qaId, cnt);
+          updateLikeCount(qaId, cnt);
+        } else if (res.status === 404) {
+          // 해당 키가 아직 없음 (아무도 좋아요 안 함)
+          COUNTER_CACHE.set(qaId, 0);
+          updateLikeCount(qaId, 0);
+        }
+      } catch (e) { /* 네트워크 오류 무시 */ }
+    }));
+
+    // 댓글 카운트 (Firebase 활성화된 경우)
+    $$('.comment-count').forEach(el => el.textContent = '');
+    if (firebaseEnabled) {
+      try {
+        for (const qaId of visibleIds) {
+          const { collection, query, where, getCountFromServer } = window._fs;
+          try {
+            const q = query(collection(db, 'comments'), where('qaId', '==', qaId));
+            const snap = await getCountFromServer(q);
+            const cnt = snap.data().count;
+            const card = document.querySelector(`.qa-card[data-qa-id="${qaId}"]`);
+            if (card && cnt > 0) {
+              const el = card.querySelector('.comment-count');
+              if (el) el.textContent = cnt;
+            }
+          } catch {}
+        }
+      } catch {}
+    }
   }
 
   // ====== 검색 실행 ======

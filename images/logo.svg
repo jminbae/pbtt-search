@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <rect width="320" height="320" fill="#7DC1DD"/>
+  <text x="160" y="232"
+        font-family="'Playfair Display', Georgia, 'Times New Roman', serif"
+        font-size="220"
+        font-weight="700"
+        fill="#FFFFFF"
+        text-anchor="middle"
+        letter-spacing="-8">tt:</text>
+</svg>
