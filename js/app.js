@@ -296,8 +296,8 @@
   }
 
   // ====== 무한 스크롤 페이지네이션 ======
-  const PAGE_THRESHOLD = 15;  // 이 이상이면 페이지네이션 적용
-  const PAGE_SIZE = 12;       // 한 번에 로드할 카드 수
+  const PAGE_THRESHOLD = 100; // 이 이상이면 페이지네이션 적용 (그 이하는 한 번에 모두)
+  const PAGE_SIZE = 30;       // 한 번에 로드할 카드 수
   const _pager = { groups: [], cursor: 0, query: '', observer: null };
 
   function isMasonryViewport() {
@@ -480,20 +480,24 @@
       b.score - a.score || b.qa.uploadDate.localeCompare(a.qa.uploadDate)
     );
 
+    // 인기 카운트가 아직 모이지 않았으면 최신순으로 fallback
+    let displayList = popular;
+    let notice = '';
     if (popular.length === 0) {
-      root.innerHTML = `
-        <div class="empty-state">
-          <h3>아직 집계된 인기글이 없어요</h3>
-          <p>좋아요나 더보기를 눌러주시면 인기글로 올라옵니다.</p>
-        </div>
-      `;
-      return;
+      displayList = ALL_QAS.slice()
+        .sort((a, b) => b.uploadDate.localeCompare(a.uploadDate) || a.id - b.id)
+        .map(qa => ({ qa, score: 0 }));
+      notice = `<div class="popular-notice">아직 인기 집계가 충분하지 않아 최신순으로 표시합니다.</div>`;
     }
 
-    const cardHtmls = popular.map(({ qa }, idx) =>
-      cardHtml(qa, '').replace('<article ', `<article style="animation-delay:${idx * 60}ms" `)
+    const cardHtmls = displayList.map(({ qa }, idx) =>
+      cardHtml(qa, '').replace('<article ', `<article style="animation-delay:${idx * 30}ms" `)
     );
-    distributeCards(root, cardHtmls);
+    root.innerHTML = notice;
+    const wrap = document.createElement('div');
+    wrap.id = 'pop-cards-wrap';
+    root.appendChild(wrap);
+    distributeCards(wrap, cardHtmls);
     refreshCounts();
   }
 
@@ -608,7 +612,7 @@
     const qa = ALL_QAS.find(q => q.id === qaId);
     const shareData = {
       title: qa ? qa.question : '피부텐텐 Q&A',
-      text: qa ? `${qa.question}\n— 피부텐텐 Q&A (피부가 예뻐지는 10분)` : '피부텐텐 Q&A — 피부과 전문의가 답하는, 피부가 예뻐지는 모든 이야기',
+      text: qa ? `${qa.question}\n— 피부텐텐 Q&A (피부가 예뻐지는 10분)` : '피부텐텐 Q&A — 피부과 전문의가 답하는 피부가 예뻐지는 모든 이야기',
       url
     };
 
@@ -853,7 +857,7 @@
       const hero = $('#hero');
       if (hero) hero.style.display = '';
       // 메타 복원
-      document.title = '피부텐텐 Q&A — 피부과 전문의가 답하는, 피부가 예뻐지는 모든 이야기';
+      document.title = '피부텐텐 Q&A — 피부과 전문의가 답하는 피부가 예뻐지는 모든 이야기';
       renderResults(q);
     }
   }

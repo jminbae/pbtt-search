@@ -730,6 +730,16 @@ main {
   padding: 48px 20px;
   color: var(--text-secondary);
 }
+.popular-notice {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  margin: 0 auto 16px;
+  max-width: 720px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+}
 
 /* ============== Doctors page ============== */
 .doctors-header {
