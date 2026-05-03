@@ -313,32 +313,27 @@ main {
 }
 .results-header strong { color: var(--primary); }
 
-/* ============== Video Group (Thread) ============== */
-.video-group {
-  margin-bottom: 32px;
-  position: relative;
-  max-width: 720px;       /* 모바일/태블릿: 단일 컬럼 가독성 */
-  margin-left: auto;
-  margin-right: auto;
-}
+/* video-group / thread 래퍼 무력화 → grid item이 .qa-card 단위가 됨 */
+.video-group, .thread { display: contents; }
+
 #results-header, .qa-detail {
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
 }
+/* 모바일/태블릿: 카드 가독성 폭 720, 가운데 정렬 */
+#results { max-width: 720px; margin-left: auto; margin-right: auto; }
 
-/* 데스크탑: 검색 결과 영상 그룹을 2열 grid로 (좌→우→좌→우 순서) */
+/* 데스크탑: 카드 단위 2열 grid (좌→우→좌→우 순서) */
 @media (min-width: 900px) {
   #results {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px 24px;
+    gap: 16px 20px;
     align-items: start;
     max-width: 1080px;
-    margin-left: auto;
-    margin-right: auto;
   }
-  .video-group {
+  .qa-card {
     max-width: none;
     margin: 0;
   }

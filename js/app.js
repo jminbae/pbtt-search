@@ -895,7 +895,7 @@
         <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
       </header>
       <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장님의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
-      <section>${cards}</section>
+      <section id="results">${cards}</section>
     `;
     refreshCounts();
   }
