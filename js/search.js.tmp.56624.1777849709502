@@ -4,7 +4,7 @@
 // =====================================================================
 
 (function (global) {
-  const { SYNONYMS, ALL_QAS, DOCTORS, HOT_IDS, PICK_IDS } = global.PBTT;
+  const { SYNONYMS, ALL_QAS, DOCTORS } = global.PBTT;
 
   // 모든 동의어 → 표준 키워드 역매핑 인덱스 생성
   const SYNONYM_INDEX = {};
@@ -141,10 +141,10 @@
   }
 
   // 메인 검색 함수
-  // 다중 단어(공백 split)는 AND 조건. 각 단어별 점수 합산 (모두 매칭되어야 결과에 포함)
   function search(query) {
     const trimmed = (query || '').trim();
     if (!trimmed) {
+      // 빈 검색어 → 영상 최신순(uploadDate desc), 같은 영상 내는 qa.id 순
       return ALL_QAS
         .slice()
         .sort((a, b) => {
@@ -154,38 +154,19 @@
         .map(qa => ({ qa, score: 1 }));
     }
 
-    const words = trimmed.split(/\s+/).filter(w => w);
-    const wordTokenSets = words.map(w => expandQuery(w));
+    const tokens = expandQuery(trimmed);
     const results = [];
 
     for (const qa of ALL_QAS) {
-      let allMatch = true;
-      let totalScore = 0;
-      for (let i = 0; i < wordTokenSets.length; i++) {
-        const sc = scoreQA(qa, wordTokenSets[i], words[i]);
-        if (sc <= 0) { allMatch = false; break; }
-        totalScore += sc;
-      }
-      if (allMatch && totalScore > 0) {
-        // HOT/Pick 약간의 가산점 (제목 매칭 1000점에 비해 작음 - 동률 정렬에 영향)
-        let bonus = 0;
-        if (HOT_IDS && HOT_IDS.has(qa.id)) bonus += 80;
-        if (PICK_IDS && PICK_IDS.has(qa.id)) bonus += 80;
-        results.push({ qa, score: totalScore + bonus });
-      }
+      const sc = scoreQA(qa, tokens, trimmed);
+      if (sc > 0) results.push({ qa, score: sc });
     }
 
-    // 정렬: 점수 desc → 같은 점수 + 같은 90일 버킷이면 안정 랜덤 → 그 외는 최신순
-    // (랜덤 셔플은 같은 시기 동일 점수 글들을 다양하게 노출시키기 위함)
-    const BUCKET_MS = 90 * 86400 * 1000;
-    function bucket(d) { return Math.floor(new Date(d).getTime() / BUCKET_MS); }
-    // 안정 랜덤을 위해 각 결과에 _r 부여
-    for (const r of results) r._r = Math.random();
+    // 점수 desc → 같은 점수면 최신 영상 우선
     results.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      const ba = bucket(a.qa.uploadDate), bb = bucket(b.qa.uploadDate);
-      if (ba !== bb) return bb - ba;       // 다른 분기는 최신 우선
-      return a._r - b._r;                  // 같은 분기 + 같은 점수 → 랜덤
+      if (a.qa.uploadDate !== b.qa.uploadDate) return b.qa.uploadDate.localeCompare(a.qa.uploadDate);
+      return a.qa.id - b.qa.id;
     });
     return results;
   }

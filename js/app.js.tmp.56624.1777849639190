@@ -3,11 +3,10 @@
 // =====================================================================
 
 (function () {
-  const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, POPULAR_CATEGORIES, KEYWORD_CATEGORY, HOT_IDS, PICK_IDS, search, highlight, groupByVideo } = window.PBTT;
+  const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, POPULAR_CATEGORIES, KEYWORD_CATEGORY, search, highlight, groupByVideo } = window.PBTT;
   const CAT_LIST = ["리프팅", "주사시술", "피부증상", "홈케어", "화장품", "기타"];
   const CAT_SLUG = { "리프팅":"lifting", "주사시술":"injection", "피부증상":"condition", "홈케어":"homecare", "화장품":"cosmetic", "기타":"other" };
-  // 디폴트 카테고리: 리프팅 ↔ 주사시술 랜덤
-  let _activeCategory = Math.random() < 0.5 ? "리프팅" : "주사시술";
+  let _activeCategory = "리프팅";
 
   // ====== Firebase 설정 (사용자가 README에 따라 채워 넣음) ======
   // 비어 있으면 댓글 기능은 "준비 중"으로 표시됩니다.
@@ -171,26 +170,6 @@
     if (input) highlightChips(input.value.trim());
   }
 
-  // 검색어가 등록된 키워드면 그 카테고리로 자동 전환 (입력 즉시 연동)
-  function autoSwitchCategoryIfKeyword(query) {
-    const q = (query || '').trim();
-    if (!q) return false;
-    const norm = q.toLowerCase().replace(/\s+/g, '');
-    let cat = KEYWORD_CATEGORY[q];
-    if (!cat) {
-      for (const k of Object.keys(KEYWORD_CATEGORY)) {
-        if (k.toLowerCase().replace(/\s+/g, '') === norm) { cat = KEYWORD_CATEGORY[k]; break; }
-      }
-    }
-    if (cat && cat !== _activeCategory) {
-      _activeCategory = cat;
-      renderCategoryTabs();
-      renderCategoryChips(_activeCategory);
-      return true;
-    }
-    return false;
-  }
-
   // 검색어와 일치하는 칩만 연분홍 강조 (display는 건드리지 않음 - 칩은 항상 그대로 노출)
   function highlightChips(query) {
     const container = $('#chips-container');
@@ -258,18 +237,8 @@
     const questionHtml = highlight(qa.question, query);
     const doctorHtml = highlight(qa.doctor, query);
 
-    const isHot = HOT_IDS && HOT_IDS.has(qa.id);
-    const isPick = PICK_IDS && PICK_IDS.has(qa.id);
-    let cardCls = 'qa-card';
-    if (isHot) cardCls += ' is-hot';
-    if (isPick) cardCls += ' is-pick';
-    let badge = '';
-    if (isHot) badge += '<span class="card-badge badge-hot">HOT</span>';
-    if (isPick) badge += '<span class="card-badge badge-pick">원장님 Pick</span>';
-
     return `
-      <article class="${cardCls}" data-qa-id="${qa.id}" data-video-id="${qa.videoId}" itemscope itemtype="https://schema.org/Question">
-        ${badge}
+      <article class="qa-card" data-qa-id="${qa.id}" data-video-id="${qa.videoId}" itemscope itemtype="https://schema.org/Question">
         <meta itemprop="name" content="${escapeHtml(qa.question)}">
         <a class="doctor-row" href="doctors.html?slug=${doc.slug}" data-doctor-link>
           <img class="avatar" src="${doc.photo}" alt="${doc.name} 원장 프로필" loading="lazy" width="44" height="44">
@@ -931,8 +900,7 @@
   function runSearch(query) {
     setRoute({ q: query, qa: null });
     renderResults(query);
-    // 검색어가 등록 키워드면 카테고리 자동 전환 (전환 안 되면 기존 카테고리 유지하면서 강조만)
-    if (!autoSwitchCategoryIfKeyword(query)) highlightChips(query);
+    highlightChips(query);
   }
   function debouncedSearch(query) {
     clearTimeout(_searchTimer);
@@ -1175,8 +1143,7 @@
       });
       input.addEventListener('input', () => {
         const q = input.value.trim();
-        // 입력 즉시 카테고리 자동 전환 (등록 키워드인 경우만 전환됨)
-        if (!autoSwitchCategoryIfKeyword(q)) highlightChips(q);
+        highlightChips(q);
         debouncedSearch(q);
       });
     }

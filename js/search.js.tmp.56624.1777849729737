@@ -4,7 +4,7 @@
 // =====================================================================
 
 (function (global) {
-  const { SYNONYMS, ALL_QAS, DOCTORS, HOT_IDS, PICK_IDS } = global.PBTT;
+  const { SYNONYMS, ALL_QAS, DOCTORS } = global.PBTT;
 
   // 모든 동의어 → 표준 키워드 역매핑 인덱스 생성
   const SYNONYM_INDEX = {};
@@ -167,11 +167,7 @@
         totalScore += sc;
       }
       if (allMatch && totalScore > 0) {
-        // HOT/Pick 약간의 가산점 (제목 매칭 1000점에 비해 작음 - 동률 정렬에 영향)
-        let bonus = 0;
-        if (HOT_IDS && HOT_IDS.has(qa.id)) bonus += 80;
-        if (PICK_IDS && PICK_IDS.has(qa.id)) bonus += 80;
-        results.push({ qa, score: totalScore + bonus });
+        results.push({ qa, score: totalScore });
       }
     }
 
