@@ -617,16 +617,29 @@ main {
 /* ====== HOT / 원장님 Pick 카드 강조 ====== */
 .qa-card { position: relative; }
 .qa-card.is-hot {
-  background: #FFFAFA;            /* 거의 흰색에 가까운 핑크 톤 */
-  --card-bg: #FFFAFA;             /* 답변 fade-out 그라데이션 색도 동일하게 */
+  background: #FFFAFA;
+  --card-bg: #FFFAFA;
+  border-left: 3px solid #F8BBD0;     /* 좌측 강조 - 모바일에서도 시인성 확보 */
 }
 .qa-card.is-pick {
-  background: #F8FBFE;            /* 거의 흰색에 가까운 하늘 톤 */
+  background: #F8FBFE;
   --card-bg: #F8FBFE;
+  border-left: 3px solid #90CAF9;
 }
 .qa-card.is-hot.is-pick {
   background: linear-gradient(135deg, #FFFAFA 0%, #F8FBFE 100%);
-  --card-bg: #FBFAFB;             /* 두 색의 중간 톤 */
+  --card-bg: #FBFAFB;
+  border-left: 3px solid #CE93D8;     /* HOT + Pick = 보라 */
+}
+/* 모바일: 배경 살짝 더 진하게 + 좌측 바도 더 굵게 */
+@media (max-width: 600px) {
+  .qa-card.is-hot   { background: #FFF0F3; --card-bg: #FFF0F3; border-left-width: 4px; }
+  .qa-card.is-pick  { background: #ECF4FB; --card-bg: #ECF4FB; border-left-width: 4px; }
+  .qa-card.is-hot.is-pick {
+    background: linear-gradient(135deg, #FFF0F3 0%, #ECF4FB 100%);
+    --card-bg: #F5F2F7;
+    border-left-width: 4px;
+  }
 }
 .card-badge {
   position: absolute;
