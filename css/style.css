@@ -142,18 +142,29 @@ mark {
 }
 .header-nav {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
 .header-nav a {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
   color: var(--text-secondary);
-  padding: 6px 10px;
+  padding: 7px 9px;
   border-radius: var(--radius-sm);
   transition: background var(--transition), color var(--transition);
 }
+.header-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
 .header-nav a:hover { background: var(--bg-soft); color: var(--primary); }
-.header-nav a.active { color: var(--primary); font-weight: 600; }
+.header-nav a.active { color: var(--primary); }
+.header-nav a.active svg { stroke: var(--primary); }
 .header-nav a.nav-yt:hover { background: rgba(255, 0, 0, 0.06); color: #c00; }
+@media (max-width: 600px) {
+  .header-nav { gap: 0; }
+  .header-nav a { padding: 8px; }
+  .header-nav .nav-text { display: none; }
+  .header-nav a svg { width: 20px; height: 20px; }
+}
 
 /* ============== Main ============== */
 main {
@@ -729,12 +740,10 @@ main {
 .doctor-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 14px 18px;
+  overflow: hidden;
   text-decoration: none;
   color: inherit;
   box-shadow: var(--shadow-sm);
@@ -743,48 +752,30 @@ main {
   cursor: pointer;
 }
 .doctor-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
   border-color: var(--secondary);
 }
 .doctor-photo {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  border: 3px solid var(--bg-soft);
+  display: block;
   background: var(--bg-soft);
-  margin-bottom: 12px;
+}
+.doctor-card-body {
+  padding: 12px 14px 14px;
+  text-align: center;
 }
 .doctor-card-name {
   font-size: 16px;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
-.doctor-card-branch {
+.doctor-card-title {
   font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 10px;
-}
-.doctor-card-intro {
-  font-size: 13px;
-  color: var(--text);
-  line-height: 1.5;
-  margin: 0 0 12px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.doctor-card-stat {
-  margin-top: auto;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--secondary);
-  padding: 4px 12px;
-  background: var(--bg-soft);
-  border-radius: var(--radius-pill);
 }
 
 /* Single doctor hero */

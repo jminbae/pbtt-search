@@ -243,14 +243,17 @@
     const headerEl = $('#results-header');
     if (!root) return;
 
-    const results = search(query);
+    // 한글 자모 한 글자 등 무의미 입력은 검색 안 함 (전체 결과로)
+    const meaningful = isMeaningfulQuery(query);
+    const effectiveQuery = meaningful ? query : '';
+    const results = search(effectiveQuery);
     const groups = groupByVideo(results);
 
-    // 헤더 표시
+    // 헤더 표시 (의미 있는 쿼리일 때만)
     if (headerEl) {
-      if (query) {
+      if (effectiveQuery) {
         headerEl.hidden = false;
-        headerEl.innerHTML = `<strong>"${escapeHtml(query)}"</strong> 검색 결과 ${results.length}건`;
+        headerEl.innerHTML = `<strong>"${escapeHtml(effectiveQuery)}"</strong> 검색 결과 ${results.length}건`;
       } else {
         headerEl.hidden = true;
       }
@@ -259,7 +262,7 @@
     if (results.length === 0) {
       root.innerHTML = `
         <div class="empty-state">
-          <h3>"${escapeHtml(query)}"에 해당하는 Q&A를 찾지 못했어요</h3>
+          <h3>"${escapeHtml(effectiveQuery)}"에 해당하는 Q&A를 찾지 못했어요</h3>
           <p>다른 키워드로 다시 검색해보세요.</p>
           <div class="chips" style="justify-content: center;">
             ${POPULAR_QUERIES.slice(0, 8).map(q =>
@@ -272,7 +275,7 @@
     }
 
     // 무한 스크롤 (15개 초과면 12개씩 lazy)
-    paginateRender(root, groups, results.length, query);
+    paginateRender(root, groups, results.length, effectiveQuery);
   }
 
   // ====== 무한 스크롤 페이지네이션 ======
@@ -369,7 +372,7 @@
     if (headerEl) headerEl.hidden = true;
 
     // 동적 메타 업데이트 (소셜 공유 미리보기용)
-    document.title = `${qa.question} | 피부텐텐 써치엔진`;
+    document.title = `${qa.question} | 피부텐텐 Q&A`;
     setMeta('description', qa.meta || qa.question);
     setMeta('og:title', qa.question, true);
     setMeta('og:description', qa.meta || '', true);
@@ -532,8 +535,8 @@
     const url = `${location.origin}${location.pathname.replace(/saved\.html$/, '')}?qa=${qaId}`;
     const qa = ALL_QAS.find(q => q.id === qaId);
     const shareData = {
-      title: qa ? qa.question : '피부텐텐',
-      text: qa ? `${qa.question}\n— 피부텐텐 (피부가 예뻐지는 10분)` : '피부텐텐 — 피부가 예뻐지는 10분',
+      title: qa ? qa.question : '피부텐텐 Q&A',
+      text: qa ? `${qa.question}\n— 피부텐텐 Q&A (피부가 예뻐지는 10분)` : '피부텐텐 Q&A — 피부가 예뻐지는 10분',
       url
     };
 
@@ -778,7 +781,7 @@
       const hero = $('#hero');
       if (hero) hero.style.display = '';
       // 메타 복원
-      document.title = '피부텐텐 — 피부가 예뻐지는 10분 | 피부과 전문의 Q&A';
+      document.title = '피부텐텐 Q&A — 피부가 예뻐지는 10분';
       renderResults(q);
     }
   }
@@ -797,7 +800,7 @@
   function renderDoctorList() {
     const root = $('#doctors-root');
     if (!root) return;
-    document.title = '원장님 | 피부텐텐';
+    document.title = '원장님 | 피부텐텐 Q&A';
 
     // 영상 데이터 있는 원장 우선, 그 안에서 최신 영상 순
     const list = Object.values(DOCTORS).map(d => ({
@@ -817,20 +820,25 @@
     root.innerHTML = `
       <header class="doctors-header">
         <h2>피부과 전문의</h2>
-        <p class="doctors-sub">힐하우스피부과 네트워크 원장님들이 직접 답변합니다</p>
+        <p class="doctors-sub">힐하우스피부과 원장님들이 직접 답변합니다</p>
       </header>
       <div class="doctor-grid">
         ${list.map((d, i) => `
           <a href="doctors.html?slug=${d.slug}" class="doctor-card" data-doctor-link style="animation-delay:${i*40}ms">
-            <img class="doctor-photo" src="${d.photo}" alt="${d.name} 원장" loading="lazy" width="120" height="120">
-            <div class="doctor-card-name">${escapeHtml(d.name)} <span style="font-weight:400;color:var(--text-muted);font-size:13px;">원장</span></div>
-            <div class="doctor-card-branch">${escapeHtml(d.branch || d.title)}</div>
-            <p class="doctor-card-intro">${escapeHtml(d.intro || '')}</p>
-            <div class="doctor-card-stat">${d.qaCount > 0 ? `Q&A ${d.qaCount}개` : '곧 공개 예정'}</div>
+            <img class="doctor-photo" src="${d.photo}" alt="${d.name} 원장" loading="lazy">
+            <div class="doctor-card-body">
+              <div class="doctor-card-name">${escapeHtml(d.name)} 원장</div>
+              <div class="doctor-card-title">피부과 전문의</div>
+            </div>
           </a>
         `).join('')}
       </div>
     `;
+  }
+
+  // "강남점 대표원장" → "강남점"
+  function shortBranch(b) {
+    return (b || '').replace(/\s*대표원장\s*$/, '').trim();
   }
 
   function renderDoctorPage(slug) {
@@ -841,7 +849,7 @@
       root.innerHTML = `<div class="empty-state"><h3>원장님을 찾을 수 없어요</h3><p><a href="doctors.html">목록으로 돌아가기</a></p></div>`;
       return;
     }
-    document.title = `${doctor.name} 원장 | 피부텐텐`;
+    document.title = `${doctor.name} 원장 | 피부텐텐 Q&A`;
     setMeta('description', `${doctor.name} 원장 — ${doctor.intro || ''}`);
 
     const qas = ALL_QAS
@@ -855,18 +863,26 @@
           return html.replace('<article ', `<article style="animation-delay:${i*60}ms" `);
         }).join('');
 
+    const affiliation = `힐하우스피부과 ${shortBranch(doctor.branch)}`;
     root.innerHTML = `
-      <a href="doctors.html" class="back-link" data-doctor-link>← 원장님 목록</a>
       <header class="doctor-hero">
         <img class="doctor-hero-photo" src="${doctor.photo}" alt="${doctor.name} 원장" width="160" height="160">
         <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장</small></h1>
-        <div class="doctor-hero-branch">${escapeHtml(doctor.branch || doctor.title)} · ${escapeHtml(doctor.title)}</div>
+        <div class="doctor-hero-branch">${escapeHtml(affiliation)} · 피부과 전문의</div>
         <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
       </header>
       <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
       <section>${cards}</section>
     `;
     refreshCounts();
+  }
+
+  // 검색어 의미성 판정: 완성형 한글 1자 이상 OR 영문/숫자 2자 이상
+  function isMeaningfulQuery(q) {
+    if (!q) return false;
+    if (/[가-힣]/.test(q)) return true;
+    if (/[a-zA-Z0-9]{2,}/.test(q)) return true;
+    return false;
   }
 
   window.addEventListener('popstate', handleRoute);
@@ -903,8 +919,8 @@
       main.style.transform = 'none';
       void main.offsetHeight;
       const rect = searchBox.getBoundingClientRect();
-      // navbar(56) + 여유(80) = 136px 위치에 검색창 — 살짝만 올라가게
-      const TARGET_TOP = 136;
+      // navbar(56) + 여유(44) = 100px 위치 — 적당히 올라가되 가까이 붙지 않게
+      const TARGET_TOP = 100;
       const shift = Math.min(0, -(rect.top - TARGET_TOP));
       main.style.transition = '';
       hero.classList.add('search-focused');
