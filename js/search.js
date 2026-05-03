@@ -88,33 +88,35 @@
     const doctorNorm = normalize(qa.doctor);
     const keywordsNorm = qa.keywords.map(normalize);
 
+    // 우선순위 계층: 제목(질문/주제) > 키워드 > 답변
+    // - 제목/주제 매칭: 1000점대
+    // - 키워드 매칭: 500점대
+    // - 답변 본문만 매칭: 100점대
     for (const token of queryTokens) {
       if (!token) continue;
 
-      // 영상 주제 일치
-      if (topicNorm.includes(token)) score += 100;
+      // [Tier 1] 영상 주제 또는 질문(제목)에 있으면 최우선
+      if (topicNorm.includes(token)) score += 1000;
+      if (questionNorm.includes(token)) score += 1000;
 
-      // 키워드 배열 일치
+      // [Tier 2] 키워드 배열 일치
       for (const kw of keywordsNorm) {
-        if (kw === token) score += 60;
-        else if (kw.includes(token) || token.includes(kw)) score += 35;
+        if (kw === token) score += 500;
+        else if (kw.includes(token) || token.includes(kw)) score += 300;
       }
 
-      // 질문 텍스트 일치
-      if (questionNorm.includes(token)) score += 40;
-
-      // 답변 빈도
+      // [Tier 3] 답변에만 언급
       const occurrences = (answerNorm.match(new RegExp(escapeRegex(token), 'g')) || []).length;
-      score += Math.min(occurrences * 5, 25);
+      if (occurrences > 0) score += 100 + Math.min(occurrences * 5, 50);
 
-      // 원장님 이름 일치
-      if (doctorNorm.includes(token)) score += 30;
+      // 원장님 이름 일치 (제목 다음 우선순위)
+      if (doctorNorm.includes(token)) score += 800;
     }
 
-    // 보너스: 원본 검색어가 그대로 포함되어 있으면 가중치
+    // 보너스: 원본 검색어 전체가 제목에 정확히 들어가면 큰 가중치
     if (rawNorm.length >= 2) {
-      if (questionNorm.includes(rawNorm)) score += 50;
-      if (topicNorm.includes(rawNorm)) score += 50;
+      if (questionNorm.includes(rawNorm)) score += 500;
+      if (topicNorm.includes(rawNorm)) score += 500;
     }
 
     // n-gram bigram fallback (오타/부분어 보강)
