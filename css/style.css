@@ -153,6 +153,7 @@ mark {
 }
 .header-nav a:hover { background: var(--bg-soft); color: var(--primary); }
 .header-nav a.active { color: var(--primary); font-weight: 600; }
+.header-nav a.nav-yt:hover { background: rgba(255, 0, 0, 0.06); color: #c00; }
 
 /* ============== Main ============== */
 main {
