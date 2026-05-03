@@ -26,7 +26,7 @@
   const STORAGE = {
     LIKES: 'pbtt_likes',         // {qaId: true} - 본인 표시용
     LIKES_HIT: 'pbtt_likes_hit', // {qaId: true} - abacus에 +1 호출했는지 (영구)
-    SAVED: 'pbtt_saved',         // {qaId: timestamp}
+    MORE_HIT: 'pbtt_more_hit',   // {qaId: true} - 더보기 카운트 +1 호출했는지
   };
   const ls = {
     get(key) {
@@ -195,9 +195,7 @@
   function cardHtml(qa, query, isSinglePage = false) {
     const doc = DOCTORS[qa.doctor];
     const likes = ls.get(STORAGE.LIKES);
-    const saved = ls.get(STORAGE.SAVED);
     const liked = !!likes[qa.id];
-    const isSaved = !!saved[qa.id];
     const tags = qa.keywords.map(k =>
       `<span class="tag" data-query="${escapeHtml(k)}">${escapeHtml(k)}</span>`
     ).join('');
@@ -225,17 +223,13 @@
         </div>
         ${isSinglePage ? '' : '<button type="button" class="toggle-more">더보기 ▾</button>'}
         <a class="yt-original" href="${qa.youtubeUrl}" target="_blank" rel="noopener">
-          ▶ 원본 영상 보기
+          ▶ 영상 보러가기
         </a>
         <div class="tags">${tags}</div>
         <div class="actions">
           <button class="action-btn like-btn ${liked ? 'active' : ''}" data-action="like" aria-label="좋아요" aria-pressed="${liked}">
             <svg viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span class="count like-count"></span>
-          </button>
-          <button class="action-btn save-btn ${isSaved ? 'saved' : ''}" data-action="save" aria-label="저장" aria-pressed="${isSaved}">
-            <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            <span>${isSaved ? '저장됨' : '저장'}</span>
           </button>
           <button class="action-btn comment-btn" data-action="comments" aria-label="댓글">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -452,28 +446,51 @@
     el.setAttribute('content', content);
   }
 
-  // ====== 저장한 글 페이지 ======
-  function renderSavedPage() {
+  // ====== 인기글 페이지 ======
+  // 인기 점수 = 글로벌 좋아요 수 + 펼침(더보기) 카운트 (모두 abacus에 누적)
+  async function renderPopularPage() {
     const root = $('#results');
     if (!root) return;
-    const saved = ls.get(STORAGE.SAVED);
-    const ids = Object.keys(saved).map(Number);
-    if (ids.length === 0) {
+    document.title = '인기글 | 피부텐텐 Q&A';
+    root.innerHTML = '<div class="popular-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+
+    // 모든 카드의 like + more 카운트 병렬 fetch
+    const fetchCount = async (key) => {
+      try {
+        const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/${key}`);
+        if (res.ok) {
+          const d = await res.json();
+          return d.value ?? d.count ?? 0;
+        }
+      } catch {}
+      return 0;
+    };
+
+    const scored = await Promise.all(ALL_QAS.map(async (qa) => {
+      const [like, more] = await Promise.all([
+        fetchCount(`qa-${qa.id}`),
+        fetchCount(`qa-${qa.id}-more`),
+      ]);
+      // 좋아요는 더 비중 있게 (×2)
+      return { qa, like, more, score: like * 2 + more };
+    }));
+
+    // 점수 0보다 큰 것만, 인기순 정렬
+    const popular = scored.filter(c => c.score > 0).sort((a, b) =>
+      b.score - a.score || b.qa.uploadDate.localeCompare(a.qa.uploadDate)
+    );
+
+    if (popular.length === 0) {
       root.innerHTML = `
-        <div class="saved-empty">
-          <h3>저장한 Q&A가 없습니다</h3>
-          <p style="margin-top:8px;"><a href="./">검색하러 가기 →</a></p>
+        <div class="empty-state">
+          <h3>아직 집계된 인기글이 없어요</h3>
+          <p>좋아요나 더보기를 눌러주시면 인기글로 올라옵니다.</p>
         </div>
       `;
       return;
     }
-    // 최근 저장순
-    const items = ids
-      .map(id => ({ qa: ALL_QAS.find(q => q.id === id), savedAt: saved[id] }))
-      .filter(x => x.qa)
-      .sort((a, b) => b.savedAt - a.savedAt);
 
-    const cardHtmls = items.map(({ qa }, idx) =>
+    const cardHtmls = popular.map(({ qa }, idx) =>
       cardHtml(qa, '').replace('<article ', `<article style="animation-delay:${idx * 60}ms" `)
     );
     distributeCards(root, cardHtmls);
@@ -498,23 +515,18 @@
       return;
     }
 
-    // 더보기 버튼
+    // 더보기 버튼 또는 본문 클릭으로 토글 (펼침↔접힘)
     const more = e.target.closest('.toggle-more');
-    if (more) {
-      const card = more.closest('.qa-card');
+    const answer = e.target.closest('.qa-card .answer');
+    if (more || (answer && !e.target.closest('a, button'))) {
+      const card = (more || answer).closest('.qa-card');
       const ans = card.querySelector('.answer');
+      const wasCollapsed = ans.classList.contains('collapsed');
       ans.classList.toggle('collapsed');
-      more.textContent = ans.classList.contains('collapsed') ? '더보기 ▾' : '접기 ▴';
-      return;
-    }
-
-    // 본문(answer) 클릭으로 펼치기 (링크/마크/버튼 등은 제외)
-    const collapsedAnswer = e.target.closest('.qa-card .answer.collapsed');
-    if (collapsedAnswer && !e.target.closest('a, button')) {
-      const card = collapsedAnswer.closest('.qa-card');
-      collapsedAnswer.classList.remove('collapsed');
       const moreBtn = card.querySelector('.toggle-more');
-      if (moreBtn) moreBtn.textContent = '접기 ▴';
+      if (moreBtn) moreBtn.textContent = ans.classList.contains('collapsed') ? '더보기 ▾' : '접기 ▴';
+      // 펼침 시에만 인기 카운트 (한 브라우저당 글당 1회)
+      if (wasCollapsed) hitMoreCount(parseInt(card.dataset.qaId, 10));
       return;
     }
 
@@ -534,12 +546,21 @@
       const qaId = parseInt(card.dataset.qaId, 10);
       const action = actionBtn.dataset.action;
       if (action === 'like') handleLike(qaId, actionBtn);
-      else if (action === 'save') handleSave(qaId, actionBtn);
       else if (action === 'share') handleShare(qaId);
       else if (action === 'comments') toggleComments(card);
       return;
     }
   });
+
+  // 더보기/펼침 글로벌 카운트 (한 브라우저당 글당 1회만 +1)
+  function hitMoreCount(qaId) {
+    if (!qaId) return;
+    const hits = ls.get(STORAGE.MORE_HIT);
+    if (hits[qaId]) return;
+    hits[qaId] = true;
+    ls.set(STORAGE.MORE_HIT, hits);
+    fetch(`${COUNTER_BASE}/hit/${COUNTER_NS}/qa-${qaId}-more`).catch(() => {});
+  }
 
   async function handleLike(qaId, btn) {
     const likes = ls.get(STORAGE.LIKES);
@@ -579,20 +600,6 @@
     document.querySelectorAll(`.qa-card[data-qa-id="${qaId}"] .like-count`).forEach(el => {
       el.textContent = cnt;
     });
-  }
-
-  function handleSave(qaId, btn) {
-    const saved = ls.get(STORAGE.SAVED);
-    const newState = !saved[qaId];
-    if (newState) saved[qaId] = Date.now();
-    else delete saved[qaId];
-    ls.set(STORAGE.SAVED, saved);
-    btn.classList.toggle('saved', newState);
-    btn.setAttribute('aria-pressed', newState);
-    const svg = btn.querySelector('svg');
-    if (svg) svg.setAttribute('fill', newState ? 'currentColor' : 'none');
-    btn.querySelector('span').textContent = newState ? '저장됨' : '저장';
-    showToast(newState ? '저장했어요' : '저장을 취소했어요');
   }
 
   function handleShare(qaId) {
@@ -824,9 +831,9 @@
   function handleRoute() {
     const { q, qa } = parseRoute();
 
-    // saved.html
-    if (location.pathname.endsWith('saved.html')) {
-      renderSavedPage();
+    // popular.html (인기글)
+    if (location.pathname.endsWith('popular.html') || location.pathname.endsWith('saved.html')) {
+      renderPopularPage();
       return;
     }
     // doctors.html (목록 또는 단일)
