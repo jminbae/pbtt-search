@@ -933,7 +933,7 @@
       const hero = $('#hero');
       if (hero) hero.style.display = '';
       // 메타 복원
-      document.title = '피부텐텐 Q&A. 피부과 전문의가 전하는 피부가 예뻐지는 모든 이야기';
+      document.title = '피부텐텐 Q&A. 피부과 전문의가 전하는 예뻐지는 모든 이야기';
       renderResults(q);
     }
     highlightChips(q);
