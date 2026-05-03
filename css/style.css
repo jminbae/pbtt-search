@@ -854,22 +854,30 @@ main {
   box-shadow: none;
   background: transparent;
 }
-/* 새 순서: 멘트 → 이름 → 소속 */
+/* 페이지 진입 시 위에서 살짝 내려오는 fade-in */
+@keyframes heroSlideDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 새 순서: 멘트 → 이름 → 소속 (각 시간차 fade-in) */
 .doctor-hero-intro {
   font-size: 14.5px;
   color: var(--text);
   line-height: 1.7;
   max-width: 420px;
-  margin: 0;                    /* 데스크탑은 meta가 margin-top: auto로 분리 */
+  margin: 0;
   white-space: pre-line;
+  animation: heroSlideDown 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 .doctor-hero-name {
   font-size: 28px;
   font-weight: 800;
   color: var(--primary);
-  margin: 0 0 6px;             /* 이름 → 소속 짧게 */
+  margin: 0 0 6px;
   letter-spacing: -0.7px;
   line-height: 1.1;
+  animation: heroSlideDown 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.12s both;
 }
 .doctor-hero-branch {
   display: block;
@@ -880,6 +888,10 @@ main {
   border: none;
   padding: 0;
   font-weight: 500;
+  animation: heroSlideDown 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.22s both;
+}
+.doctor-hero-photo {
+  animation: heroSlideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.05s both;
 }
 
 @media (max-width: 700px) {
