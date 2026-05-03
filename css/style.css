@@ -317,7 +317,7 @@ main {
 .video-group {
   margin-bottom: 32px;
   position: relative;
-  max-width: 720px;       /* 본문 가독성: 카드 폭 제한 (헤더/페이지는 1080) */
+  max-width: 720px;       /* 모바일/태블릿: 단일 컬럼 가독성 */
   margin-left: auto;
   margin-right: auto;
 }
@@ -325,6 +325,28 @@ main {
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* 데스크탑: 검색 결과 영상 그룹을 2열로 (쓰레드 유지, 폭 활용) */
+@media (min-width: 900px) {
+  #results {
+    column-count: 2;
+    column-gap: 24px;
+    max-width: 1080px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .video-group {
+    max-width: none;
+    margin: 0 0 24px;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .load-sentinel {
+    column-span: all;
+    -webkit-column-span: all;
+  }
 }
 .video-group-header {
   display: flex;
