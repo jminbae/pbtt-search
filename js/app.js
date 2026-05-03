@@ -133,7 +133,7 @@
     const container = $('#chips-container');
     if (!container) return;
     container.innerHTML = POPULAR_QUERIES.map(q =>
-      `<button type="button" class="chip" data-query="${escapeHtml(q)}">#${escapeHtml(q)}</button>`
+      `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
     ).join('');
     container.addEventListener('click', e => {
       const btn = e.target.closest('.chip');
@@ -141,6 +141,30 @@
       const q = btn.dataset.query;
       $('#search-input').value = q;
       runSearch(q);
+    });
+    // 칩이 많으면 "더보기" 토글
+    setupChipsExpand();
+  }
+
+  function setupChipsExpand() {
+    const popular = $('#popular-chips');
+    const chips = $('#chips-container');
+    if (!popular || !chips) return;
+    // 기존 더보기 버튼 제거
+    popular.querySelector('.chips-more')?.remove();
+    // 다음 프레임에 측정 (레이아웃 적용 후)
+    requestAnimationFrame(() => {
+      const overflows = chips.scrollHeight > chips.clientHeight + 4;
+      if (!overflows) return;
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'chips-more';
+      more.textContent = '더보기 ▾';
+      popular.appendChild(more);
+      more.addEventListener('click', () => {
+        const expanded = popular.classList.toggle('expanded');
+        more.textContent = expanded ? '접기 ▴' : '더보기 ▾';
+      });
     });
   }
 
@@ -152,7 +176,7 @@
     const liked = !!likes[qa.id];
     const isSaved = !!saved[qa.id];
     const tags = qa.keywords.map(k =>
-      `<span class="tag" data-query="${escapeHtml(k)}">#${escapeHtml(k)}</span>`
+      `<span class="tag" data-query="${escapeHtml(k)}">${escapeHtml(k)}</span>`
     ).join('');
 
     const answerHtml = highlight(qa.answer, query);
@@ -162,7 +186,7 @@
     return `
       <article class="qa-card" data-qa-id="${qa.id}" data-video-id="${qa.videoId}" itemscope itemtype="https://schema.org/Question">
         <meta itemprop="name" content="${escapeHtml(qa.question)}">
-        <div class="doctor-row">
+        <a class="doctor-row" href="doctors.html?slug=${doc.slug}" data-doctor-link>
           <img class="avatar" src="${doc.photo}" alt="${doc.name} 원장 프로필" loading="lazy" width="44" height="44">
           <div class="doctor-info">
             <div class="doctor-name">
@@ -171,7 +195,7 @@
             </div>
             <div class="doctor-meta">${doc.title} · ${escapeHtml(qa.videoTopic)} · ${fmtDate(qa.uploadDate)}</div>
           </div>
-        </div>
+        </a>
         <h3 class="question">${questionHtml}</h3>
         <div class="answer ${isSinglePage ? '' : 'collapsed'}" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
           <span itemprop="text">${answerHtml}</span>
@@ -239,7 +263,7 @@
           <p>다른 키워드로 다시 검색해보세요.</p>
           <div class="chips" style="justify-content: center;">
             ${POPULAR_QUERIES.slice(0, 8).map(q =>
-              `<button type="button" class="chip" data-query="${escapeHtml(q)}">#${escapeHtml(q)}</button>`
+              `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
             ).join('')}
           </div>
         </div>
@@ -732,9 +756,16 @@
   function handleRoute() {
     const { q, qa } = parseRoute();
 
-    // saved.html 인지 확인
+    // saved.html
     if (location.pathname.endsWith('saved.html')) {
       renderSavedPage();
+      return;
+    }
+    // doctors.html (목록 또는 단일)
+    if (location.pathname.endsWith('doctors.html')) {
+      const slug = new URLSearchParams(location.search).get('slug');
+      if (slug) renderDoctorPage(slug);
+      else renderDoctorList();
       return;
     }
 
@@ -747,9 +778,95 @@
       const hero = $('#hero');
       if (hero) hero.style.display = '';
       // 메타 복원
-      document.title = '피부텐텐 써치엔진 | 피부과 전문의 Q&A 검색';
+      document.title = '피부텐텐 — 피부가 예뻐지는 10분 | 피부과 전문의 Q&A';
       renderResults(q);
     }
+  }
+
+  // ====== 원장 목록 / 단일 페이지 ======
+  function getDoctorLatestDate(doctorName) {
+    let latest = '';
+    for (const qa of ALL_QAS) {
+      if (qa.doctor === doctorName) {
+        if (qa.uploadDate > latest) latest = qa.uploadDate;
+      }
+    }
+    return latest;
+  }
+
+  function renderDoctorList() {
+    const root = $('#doctors-root');
+    if (!root) return;
+    document.title = '원장님 | 피부텐텐';
+
+    // 영상 데이터 있는 원장 우선, 그 안에서 최신 영상 순
+    const list = Object.values(DOCTORS).map(d => ({
+      ...d,
+      latestDate: getDoctorLatestDate(d.name),
+      qaCount: ALL_QAS.filter(q => q.doctor === d.name).length,
+    }));
+    list.sort((a, b) => {
+      // 데이터 있는 사람 먼저
+      if (!!a.latestDate !== !!b.latestDate) return a.latestDate ? -1 : 1;
+      // 둘 다 있으면 최신순
+      if (a.latestDate && b.latestDate) return b.latestDate.localeCompare(a.latestDate);
+      // 둘 다 없으면 이름순
+      return a.name.localeCompare(b.name);
+    });
+
+    root.innerHTML = `
+      <header class="doctors-header">
+        <h2>피부과 전문의</h2>
+        <p class="doctors-sub">힐하우스피부과 네트워크 원장님들이 직접 답변합니다</p>
+      </header>
+      <div class="doctor-grid">
+        ${list.map((d, i) => `
+          <a href="doctors.html?slug=${d.slug}" class="doctor-card" data-doctor-link style="animation-delay:${i*40}ms">
+            <img class="doctor-photo" src="${d.photo}" alt="${d.name} 원장" loading="lazy" width="120" height="120">
+            <div class="doctor-card-name">${escapeHtml(d.name)} <span style="font-weight:400;color:var(--text-muted);font-size:13px;">원장</span></div>
+            <div class="doctor-card-branch">${escapeHtml(d.branch || d.title)}</div>
+            <p class="doctor-card-intro">${escapeHtml(d.intro || '')}</p>
+            <div class="doctor-card-stat">${d.qaCount > 0 ? `Q&A ${d.qaCount}개` : '곧 공개 예정'}</div>
+          </a>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderDoctorPage(slug) {
+    const root = $('#doctors-root');
+    if (!root) return;
+    const doctor = Object.values(DOCTORS).find(d => d.slug === slug);
+    if (!doctor) {
+      root.innerHTML = `<div class="empty-state"><h3>원장님을 찾을 수 없어요</h3><p><a href="doctors.html">목록으로 돌아가기</a></p></div>`;
+      return;
+    }
+    document.title = `${doctor.name} 원장 | 피부텐텐`;
+    setMeta('description', `${doctor.name} 원장 — ${doctor.intro || ''}`);
+
+    const qas = ALL_QAS
+      .filter(qa => qa.doctor === doctor.name)
+      .sort((a, b) => b.uploadDate.localeCompare(a.uploadDate) || a.id - b.id);
+
+    const cards = qas.length === 0
+      ? `<div class="empty-state"><p>아직 등록된 Q&A가 없어요. 곧 만나보실 수 있습니다.</p></div>`
+      : qas.map((qa, i) => {
+          const html = cardHtml(qa, '');
+          return html.replace('<article ', `<article style="animation-delay:${i*60}ms" `);
+        }).join('');
+
+    root.innerHTML = `
+      <a href="doctors.html" class="back-link" data-doctor-link>← 원장님 목록</a>
+      <header class="doctor-hero">
+        <img class="doctor-hero-photo" src="${doctor.photo}" alt="${doctor.name} 원장" width="160" height="160">
+        <h1 class="doctor-hero-name">${escapeHtml(doctor.name)} <small>원장</small></h1>
+        <div class="doctor-hero-branch">${escapeHtml(doctor.branch || doctor.title)} · ${escapeHtml(doctor.title)}</div>
+        <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
+      </header>
+      <h3 class="doctor-qa-heading">${escapeHtml(doctor.name)} 원장의 Q&A ${qas.length > 0 ? `(${qas.length})` : ''}</h3>
+      <section>${cards}</section>
+    `;
+    refreshCounts();
   }
 
   window.addEventListener('popstate', handleRoute);
@@ -758,49 +875,49 @@
   function setupSearchUX(input) {
     if (!input) return;
     const hero = $('#hero');
+    const main = document.querySelector('main');
 
     // 데스크톱: 자동 포커스 (모바일은 가상 키보드 강제 호출 방지)
     if (window.innerWidth > 768) {
       setTimeout(() => input.focus({ preventScroll: true }), 50);
     }
 
-    if (!hero) return;
+    if (!hero || !main) return;
 
-    let scrollAnim = null;
     let blurDelayTimer = null;
     let removeStyleTimer = null;
     const clearAllPending = () => {
-      if (scrollAnim) { cancelAnimationFrame(scrollAnim); scrollAnim = null; }
       if (blurDelayTimer) { clearTimeout(blurDelayTimer); blurDelayTimer = null; }
       if (removeStyleTimer) { clearTimeout(removeStyleTimer); removeStyleTimer = null; }
     };
 
-    // 모바일에서 검색창을 nav 바로 아래로 슬라이드 업
+    // 모바일에서 main 전체(검색창 + 인기검색어 + 결과)를 살짝만 위로 슬라이드
     const slideSearchUp = () => {
       if (window.innerWidth > 768) return;
       if (hero.classList.contains('search-focused')) return;
       const searchBox = document.querySelector('.search-form');
       if (!searchBox) return;
       clearAllPending();
-      // 정확한 위치 측정 위해 일시적으로 transform 제거
-      hero.style.transition = 'none';
-      hero.style.transform = 'none';
-      void hero.offsetHeight; // reflow
+      // 정확한 위치 측정을 위해 일시적으로 transform 제거
+      main.style.transition = 'none';
+      main.style.transform = 'none';
+      void main.offsetHeight;
       const rect = searchBox.getBoundingClientRect();
-      // navbar(56) + 약간의 여백(12) 아래로 위치
-      const shift = Math.min(0, -(rect.top - 68));
-      hero.style.transition = '';
+      // navbar(56) + 여유(80) = 136px 위치에 검색창 — 살짝만 올라가게
+      const TARGET_TOP = 136;
+      const shift = Math.min(0, -(rect.top - TARGET_TOP));
+      main.style.transition = '';
       hero.classList.add('search-focused');
-      hero.style.transform = shift === 0 ? '' : `translate3d(0, ${shift}px, 0)`;
+      main.style.transform = shift === 0 ? '' : `translate3d(0, ${shift}px, 0)`;
     };
 
     const revertIfEmpty = () => {
       if (input.value.trim()) return;
       if (!hero.classList.contains('search-focused')) return;
       hero.classList.remove('search-focused');
-      hero.style.transform = 'translate3d(0, 0, 0)';
+      main.style.transform = 'translate3d(0, 0, 0)';
       removeStyleTimer = setTimeout(() => {
-        hero.style.transform = '';
+        main.style.transform = '';
         removeStyleTimer = null;
       }, 400);
     };

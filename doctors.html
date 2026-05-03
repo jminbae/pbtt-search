@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#7DC1DD">
-  <title>저장한 Q&A | 피부텐텐</title>
-  <meta name="description" content="내가 저장한 피부과 전문의 Q&A 모음">
-  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#1B4965">
+  <title>원장님 | 피부텐텐</title>
+  <meta name="description" content="피부텐텐 — 피부과 전문의 원장님 소개. 정한미·박효진·김수형·이도영·권수현·고혜림·김종식·배정민·강현진 원장.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="images/logo.svg">
   <link rel="apple-touch-icon" href="images/logo.svg">
@@ -25,16 +24,15 @@
         </span>
       </a>
       <nav class="header-nav">
-        <a href="./doctors.html">원장님</a>
-        <a href="./saved.html" class="active">저장</a>
+        <a href="./doctors.html" class="active">원장님</a>
+        <a href="./saved.html">저장</a>
         <a href="https://www.youtube.com/@pibutenten" target="_blank" rel="noopener" class="nav-yt">유튜브 ↗</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <h2 style="margin: 16px 0 24px; color: var(--primary); font-size: 22px;">저장한 Q&A</h2>
-    <section id="results" aria-live="polite"></section>
+    <section id="doctors-root" aria-live="polite"></section>
   </main>
 
   <footer class="site-footer">

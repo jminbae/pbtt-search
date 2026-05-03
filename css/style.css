@@ -162,21 +162,20 @@ main {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 24px 20px 64px;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 /* ============== Hero ============== */
 .hero {
   text-align: center;
   padding: 56px 0 40px;
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
 }
-.hero h1, .hero .subtitle, .hero .popular {
-  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+.hero h1, .hero .subtitle {
+  transition: opacity 0.22s ease;
 }
 .hero.search-focused h1,
-.hero.search-focused .subtitle,
-.hero.search-focused .popular {
+.hero.search-focused .subtitle {
   opacity: 0;
   pointer-events: none;
 }
@@ -244,6 +243,26 @@ main {
   color: var(--text-muted);
   margin-bottom: 10px;
 }
+.popular .chips {
+  max-height: 96px;     /* 약 3줄 */
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.popular.expanded .chips {
+  max-height: 600px;
+}
+.chips-more {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.chips-more:hover { background: var(--bg-soft); color: var(--primary); }
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -680,3 +699,165 @@ main {
   padding: 48px 20px;
   color: var(--text-secondary);
 }
+
+/* ============== Doctors page ============== */
+.doctors-header {
+  text-align: center;
+  margin: 24px 0 32px;
+}
+.doctors-header h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+.doctors-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+@media (min-width: 600px) {
+  .doctor-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+.doctor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 14px 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  animation: fadeInUp 0.4s ease-out both;
+  cursor: pointer;
+}
+.doctor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--secondary);
+}
+.doctor-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--bg-soft);
+  background: var(--bg-soft);
+  margin-bottom: 12px;
+}
+.doctor-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+.doctor-card-branch {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.doctor-card-intro {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.doctor-card-stat {
+  margin-top: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--secondary);
+  padding: 4px 12px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-pill);
+}
+
+/* Single doctor hero */
+.doctor-hero {
+  text-align: center;
+  padding: 24px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.doctor-hero-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--white);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+.doctor-hero-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+.doctor-hero-name small {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.doctor-hero-branch {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.doctor-hero-intro {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.doctor-qa-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 16px;
+  padding-left: 4px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.back-link:hover { color: var(--primary); }
+
+/* Make doctor-row in qa-card clickable */
+.qa-card a.doctor-row {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  margin-left: -6px;
+  padding: 4px 6px;
+  transition: background var(--transition);
+}
+.qa-card a.doctor-row:hover {
+  background: var(--bg-soft);
+}
+.qa-card a.doctor-row:hover .doctor-name { color: var(--primary); }
