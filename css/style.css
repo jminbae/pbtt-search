@@ -200,7 +200,7 @@ main {
   font-size: 32px;
   font-weight: 800;
   color: var(--primary);
-  margin: 0 0 12px;
+  margin: 0 0 32px;     /* subtitle 제거에 따른 여백 보강 */
   letter-spacing: -0.8px;
 }
 .hero .subtitle {
