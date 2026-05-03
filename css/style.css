@@ -115,9 +115,30 @@ mark {
 .logo-tagline {
   font-size: 11px;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 400;
   margin-top: 2px;
   letter-spacing: -0.2px;
+}
+.load-sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  gap: 8px;
+}
+.load-sentinel .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--secondary);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.load-sentinel .dot:nth-child(2) { animation-delay: 0.2s; }
+.load-sentinel .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.7); }
+  40% { opacity: 1; transform: scale(1); }
 }
 .header-nav {
   display: flex;

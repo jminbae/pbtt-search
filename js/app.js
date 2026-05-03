@@ -247,20 +247,85 @@
       return;
     }
 
-    // 영상 그룹별 렌더링 (영상 헤더 없이 쓰레드만)
+    // 무한 스크롤 (15개 초과면 12개씩 lazy)
+    paginateRender(root, groups, results.length, query);
+  }
+
+  // ====== 무한 스크롤 페이지네이션 ======
+  const PAGE_THRESHOLD = 15;  // 이 이상이면 페이지네이션 적용
+  const PAGE_SIZE = 12;       // 한 번에 로드할 카드 수
+  const _pager = { groups: [], cursor: 0, query: '', observer: null };
+
+  function paginateRender(root, groups, totalCount, query) {
+    // 이전 옵저버 정리
+    if (_pager.observer) { _pager.observer.disconnect(); _pager.observer = null; }
+    _pager.groups = groups;
+    _pager.cursor = 0;
+    _pager.query = query;
+    root.innerHTML = '';
+
+    // 임계치 이하면 한 번에 모두
+    if (totalCount <= PAGE_THRESHOLD) {
+      appendBatch(root, Infinity);
+      refreshCounts();
+      return;
+    }
+
+    // 첫 12개 로드
+    appendBatch(root, PAGE_SIZE);
+
+    // sentinel
+    const sentinel = document.createElement('div');
+    sentinel.className = 'load-sentinel';
+    sentinel.id = 'load-sentinel';
+    sentinel.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    root.appendChild(sentinel);
+
+    _pager.observer = new IntersectionObserver((entries) => {
+      if (!entries[0].isIntersecting) return;
+      if (_pager.cursor >= _pager.groups.length) {
+        sentinel.remove();
+        _pager.observer.disconnect();
+        _pager.observer = null;
+        return;
+      }
+      appendBatch(root, PAGE_SIZE, sentinel);
+      if (_pager.cursor >= _pager.groups.length) {
+        sentinel.remove();
+        _pager.observer.disconnect();
+        _pager.observer = null;
+      }
+    }, { rootMargin: '400px 0px' });
+    _pager.observer.observe(sentinel);
+
+    refreshCounts();
+  }
+
+  // 그룹 단위로 누적 카드 수가 targetCount에 도달할 때까지 추가
+  // 그룹은 잘리지 않음 (ex: 4개 그룹이 있으면 통째로 포함)
+  function appendBatch(root, targetCount, beforeEl) {
+    let added = 0;
+    let html = '';
     let stagger = 0;
-    root.innerHTML = groups.map(g => {
+    while (_pager.cursor < _pager.groups.length && added < targetCount) {
+      const g = _pager.groups[_pager.cursor];
       const cards = g.items.map((r) => {
-        const html = cardHtml(r.qa, query);
-        const styled = html.replace('<article ', `<article style="animation-delay:${stagger * 60}ms" `);
+        const styled = cardHtml(r.qa, _pager.query)
+          .replace('<article ', `<article style="animation-delay:${stagger * 50}ms" `);
         stagger++;
         return styled;
       }).join('');
-
-      return `<section class="video-group" data-video-id="${g.videoId}"><div class="thread">${cards}</div></section>`;
-    }).join('');
-
-    // 글로벌 좋아요 카운트 비동기 로드
+      html += `<section class="video-group" data-video-id="${g.videoId}"><div class="thread">${cards}</div></section>`;
+      added += g.items.length;
+      _pager.cursor++;
+    }
+    if (!html) return;
+    if (beforeEl && beforeEl.parentNode) {
+      beforeEl.insertAdjacentHTML('beforebegin', html);
+    } else {
+      root.insertAdjacentHTML('beforeend', html);
+    }
+    // 새로 추가된 카드의 좋아요 카운트 업데이트
     refreshCounts();
   }
 
