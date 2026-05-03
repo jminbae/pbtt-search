@@ -104,9 +104,9 @@
         else if (kw.includes(token) || token.includes(kw)) score += 300;
       }
 
-      // [Tier 3] 답변에만 언급 (제목/키워드가 항상 우위가 되도록 max 100점 cap)
+      // [Tier 3] 답변 본문 매칭: 1회당 100점, 최대 400점 cap
       const occurrences = (answerNorm.match(tokenRe) || []).length;
-      if (occurrences > 0) score += 50 + Math.min(occurrences * 5, 50);
+      if (occurrences > 0) score += Math.min(occurrences * 100, 400);
 
       // 원장님 이름 일치
       if (doctorNorm.includes(token)) score += 800;
