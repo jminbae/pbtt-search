@@ -301,8 +301,8 @@
   }
 
   // ====== 무한 스크롤 페이지네이션 ======
-  const PAGE_THRESHOLD = 100; // 이 이상이면 페이지네이션 적용 (그 이하는 한 번에 모두)
-  const PAGE_SIZE = 30;       // 한 번에 로드할 카드 수
+  const PAGE_THRESHOLD = 20; // 20개 이상이면 페이지네이션 적용
+  const PAGE_SIZE = 20;      // 한 번에 로드할 카드 수
   const _pager = { groups: [], cursor: 0, query: '', observer: null };
 
   function isMasonryViewport() {
