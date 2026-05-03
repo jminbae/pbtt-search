@@ -615,16 +615,11 @@ main {
 .qa-card .tag.tag-match.cat-other     { background: #E0E0E0; border-color: #9E9E9E; color: #212121; }
 
 /* ====== HOT / 원장님 Pick 카드 강조 ====== */
-/* 배경 강조 제거 - 좌측 컬러 바 + 우상단 배지로만 표시 (시각 부담 최소화) */
+/* 배경 강조 제거 - 좌측 컬러 바(연한 톤) + 우상단 배지로만 표시 */
 .qa-card { position: relative; }
-.qa-card.is-hot  { border-left: 4px solid #F48FB1; }
-.qa-card.is-pick { border-left: 4px solid #64B5F6; }
-.qa-card.is-hot.is-pick { border-left: 4px solid #BA68C8; }
-@media (max-width: 600px) {
-  .qa-card.is-hot,
-  .qa-card.is-pick,
-  .qa-card.is-hot.is-pick { border-left-width: 5px; }
-}
+.qa-card.is-hot  { border-left: 3px solid #F8BBD0; }   /* 연한 핑크 */
+.qa-card.is-pick { border-left: 3px solid #BBDEFB; }   /* 연한 블루 */
+.qa-card.is-hot.is-pick { border-left: 3px solid #E1BEE7; }   /* 연한 보라 */
 .card-badge {
   position: absolute;
   top: 12px;
