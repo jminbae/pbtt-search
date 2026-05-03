@@ -817,95 +817,111 @@ main {
   color: var(--text-muted);
 }
 
-/* Single doctor hero — 좌측 텍스트 + 우측 누끼 인물 (ref 스타일) */
+/* Single doctor hero — 좌측 텍스트 + 우측 누끼 인물 (배경 없음, 하단 라인에 인물 딱 맞춤) */
 .doctor-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: center;
-  padding: 32px 0 28px;
-  margin-bottom: 28px;
-  background: linear-gradient(135deg, #EAF4FA 0%, #F5F7FA 100%);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  position: relative;
+  align-items: end;
+  padding: 12px 0 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  min-height: 280px;
 }
 .doctor-hero-info {
-  text-align: left;
-  padding: 0 8px 0 28px;
+  align-self: center;
+  padding: 0 16px 24px 0;
 }
 .doctor-hero-photo-wrap {
   display: flex;
-  align-items: flex-end;
   justify-content: center;
-  height: 100%;
-  min-height: 320px;
+  align-items: flex-end;
+  align-self: end;
 }
 .doctor-hero-photo {
   display: block;
-  width: 100%;
-  max-width: 320px;
+  max-width: 100%;
+  max-height: 320px;
+  width: auto;
   height: auto;
-  object-fit: contain;
+  margin-bottom: -1px;       /* border-bottom 선과 인물 잘리는 선 일치 */
   border: none;
   border-radius: 0;
   box-shadow: none;
   background: transparent;
 }
 .doctor-hero-branch {
-  display: inline-block;
-  padding: 5px 14px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  display: block;
   font-size: 13px;
-  color: var(--primary);
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  background: transparent;
+  border: none;
+  padding: 0;
   font-weight: 500;
-  margin-bottom: 14px;
 }
 .doctor-hero-name {
-  font-size: 42px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--primary);
-  margin: 0 0 16px;
-  letter-spacing: -1.2px;
-  line-height: 1;
+  margin: 0 0 14px;
+  letter-spacing: -0.7px;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.doctor-hero-name .title-tag {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: -0.2px;
 }
 .doctor-hero-intro {
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--text);
   line-height: 1.7;
-  max-width: 480px;
+  max-width: 420px;
   margin: 0;
   white-space: pre-line;
 }
 
 @media (max-width: 700px) {
   .doctor-hero {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 24px 16px 20px;
-    text-align: center;
+    display: block;
+    position: relative;
+    padding: 16px 0 0;
+    min-height: 220px;
   }
   .doctor-hero-info {
-    text-align: center;
-    padding: 0;
-    order: 2;
-  }
-  .doctor-hero-photo-wrap {
-    order: 1;
-    min-height: 260px;
-  }
-  .doctor-hero-photo {
-    max-width: 220px;
+    padding: 0 150px 16px 4px;  /* 우하단 인물 자리 확보 */
+    text-align: left;
   }
   .doctor-hero-name {
-    font-size: 32px;
-    margin-bottom: 12px;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .doctor-hero-name .title-tag {
+    font-size: 12px;
+  }
+  .doctor-hero-branch {
+    font-size: 12px;
   }
   .doctor-hero-intro {
-    font-size: 14px;
-    margin: 0 auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+    max-width: none;
+  }
+  .doctor-hero-photo-wrap {
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    width: 145px;
+    height: auto;
+  }
+  .doctor-hero-photo {
+    max-width: 145px;
+    max-height: 200px;
   }
 }
 .doctor-qa-heading {

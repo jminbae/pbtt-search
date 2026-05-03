@@ -980,8 +980,11 @@
     root.innerHTML = `
       <header class="doctor-hero">
         <div class="doctor-hero-info">
-          <div class="doctor-hero-branch">🏥 ${escapeHtml(affiliation)}</div>
-          <h1 class="doctor-hero-name">${escapeHtml(doctor.name)}</h1>
+          <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
+          <h1 class="doctor-hero-name">
+            <span class="name-text">${escapeHtml(doctor.name)}</span>
+            <span class="title-tag">피부과 전문의</span>
+          </h1>
           <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
         </div>
         <div class="doctor-hero-photo-wrap">
