@@ -158,13 +158,20 @@
     chips.forEach(c => {
       if (!norm) {
         c.style.display = '';
+        c.classList.remove('chip-match');
         visible++;
         return;
       }
       const cn = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(c.dataset.query || '');
       const match = cn.includes(norm) || norm.includes(cn);
       c.style.display = match ? '' : 'none';
-      if (match) visible++;
+      // 검색어와 일치하는 칩은 연분홍 강조
+      if (match) {
+        c.classList.add('chip-match');
+        visible++;
+      } else {
+        c.classList.remove('chip-match');
+      }
     });
     // 매칭 칩 0개면 popular 영역 자체 숨김
     if (popular) popular.style.display = (norm && visible === 0) ? 'none' : '';

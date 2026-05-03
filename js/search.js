@@ -106,9 +106,9 @@
         else if (kw.includes(token) || token.includes(kw)) score += 300;
       }
 
-      // [Tier 3] 답변에 언급 (빈도 가중치 강화)
+      // [Tier 3] 답변에만 언급 (제목/키워드가 항상 우위가 되도록 max 100점 cap)
       const occurrences = (answerNorm.match(tokenRe) || []).length;
-      if (occurrences > 0) score += 100 + Math.min(occurrences * 10, 100);
+      if (occurrences > 0) score += 50 + Math.min(occurrences * 5, 50);
 
       // 원장님 이름 일치 (제목 다음 우선순위)
       if (doctorNorm.includes(token)) score += 800;

@@ -58,11 +58,11 @@ button {
 }
 
 mark {
-  background: #E91E63;
-  color: #FFFFFF;
-  padding: 0 4px;
+  background: #FFF3A3;
+  color: inherit;
+  padding: 0 2px;
   border-radius: 3px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* ============== Header ============== */
@@ -529,15 +529,27 @@ main {
   background: var(--bg-soft);
 }
 .qa-card .tag.tag-match {
-  background: #E91E63;
-  border-color: #E91E63;
-  color: #FFFFFF;
-  font-weight: 700;
+  background: #FFE0EC;
+  border-color: #F8BBD0;
+  color: #C2185B;
+  font-weight: 600;
 }
 .qa-card .tag.tag-match:hover {
-  background: #C2185B;
-  border-color: #C2185B;
-  color: #FFFFFF;
+  background: #FFD0DF;
+  border-color: #F48FB1;
+  color: #AD1457;
+}
+/* 검색창 아래 인기 검색어 칩 매칭 시 같은 연분홍 강조 */
+.chip.chip-match {
+  background: #FFE0EC;
+  border-color: #F8BBD0;
+  color: #C2185B;
+  font-weight: 600;
+}
+.chip.chip-match:hover {
+  background: #FFD0DF;
+  border-color: #F48FB1;
+  color: #AD1457;
 }
 
 /* Action bar */
