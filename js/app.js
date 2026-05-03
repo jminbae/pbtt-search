@@ -179,7 +179,8 @@
     chips.forEach(c => {
       if (!norm) { c.classList.remove('chip-match'); return; }
       const cn = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(c.dataset.query || '');
-      const match = cn.includes(norm) || norm.includes(cn);
+      // 정확 일치만 강조 (부분 일치 X)
+      const match = cn === norm;
       if (match) c.classList.add('chip-match');
       else c.classList.remove('chip-match');
     });
@@ -217,15 +218,11 @@
     const initLike = COUNTER_CACHE.has(qa.id) ? COUNTER_CACHE.get(qa.id) : (likes[qa.id] ? 1 : 0);
     const initRead = READ_CACHE.has(qa.id) ? READ_CACHE.get(qa.id) : (reads[qa.id] ? 1 : 0);
     const fmtCount = c => c == null ? '0' : (c > 999 ? `${(c/1000).toFixed(1)}k` : String(c));
-    // 검색어 토큰과 일치하는 키워드 식별 → 카테고리 색으로 강조
+    // 검색어와 정확히 일치하는 키워드만 강조 (부분 일치 X — '리프팅' 검색 시 '티타늄리프팅' 같이 강조 안 됨)
     const queryNorm = (query || '').trim().toLowerCase().replace(/\s+/g, '');
     const tags = qa.keywords.map(k => {
       const kNorm = k.toLowerCase().replace(/\s+/g, '');
-      const isMatch = queryNorm && (
-        kNorm === queryNorm ||
-        kNorm.includes(queryNorm) ||
-        queryNorm.includes(kNorm)
-      );
+      const isMatch = queryNorm && kNorm === queryNorm;
       const cat = KEYWORD_CATEGORY[k];
       const slug = cat ? CAT_SLUG[cat] : null;
       let cls = 'tag';
