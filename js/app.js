@@ -196,7 +196,12 @@
   function cardHtml(qa, query, isSinglePage = false) {
     const doc = DOCTORS[qa.doctor];
     const likes = ls.get(STORAGE.LIKES);
+    const reads = ls.get(STORAGE.MORE_HIT);
     const liked = !!likes[qa.id];
+    // 캐시 우선, 없으면 본인 활동 fallback
+    const initLike = COUNTER_CACHE.has(qa.id) ? COUNTER_CACHE.get(qa.id) : (likes[qa.id] ? 1 : 0);
+    const initRead = READ_CACHE.has(qa.id) ? READ_CACHE.get(qa.id) : (reads[qa.id] ? 1 : 0);
+    const fmtCount = c => c == null ? '0' : (c > 999 ? `${(c/1000).toFixed(1)}k` : String(c));
     const tags = qa.keywords.map(k =>
       `<span class="tag" data-query="${escapeHtml(k)}">${escapeHtml(k)}</span>`
     ).join('');
@@ -231,11 +236,11 @@
           <div class="actions-left">
             <span class="action-btn read-stat" aria-label="조회수" title="조회수">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="count read-count">0</span>
+              <span class="count read-count">${fmtCount(initRead)}</span>
             </span>
             <button class="action-btn like-btn ${liked ? 'active' : ''}" data-action="like" aria-label="좋아요" aria-pressed="${liked}">
               <svg viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <span class="count like-count">0</span>
+              <span class="count like-count">${fmtCount(initLike)}</span>
             </button>
             <button class="action-btn comment-btn" data-action="comments" aria-label="댓글">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -481,6 +486,9 @@
         fetchCount(`qa-${qa.id}`),
         fetchCount(`qa-${qa.id}-more`),
       ]);
+      // 캐시에 저장 (이후 cardHtml 그릴 때 활용)
+      COUNTER_CACHE.set(qa.id, globalLike);
+      READ_CACHE.set(qa.id, globalMore);
       // 글로벌 카운트 vs 본인 활동 중 큰 값 (본인은 0 또는 1)
       const like = Math.max(globalLike, myLikes[qa.id] ? 1 : 0);
       const more = Math.max(globalMore, myReads[qa.id] ? 1 : 0);
