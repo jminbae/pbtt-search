@@ -136,13 +136,7 @@
     container.innerHTML = POPULAR_QUERIES.map(q =>
       `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
     ).join('');
-    container.addEventListener('click', e => {
-      const btn = e.target.closest('.chip');
-      if (!btn) return;
-      const q = btn.dataset.query;
-      $('#search-input').value = q;
-      runSearch(q);
-    });
+    // 칩 클릭은 document 레벨 핸들러(.tag, .chip 통합)에서 처리 - 중복 제거
     // 칩이 많으면 "더보기" 토글
     setupChipsExpand();
   }
