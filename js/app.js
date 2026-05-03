@@ -147,34 +147,19 @@
     setupChipsExpand();
   }
 
-  // 입력값에 매칭되는 칩만 보이게 필터링
-  function filterChips(query) {
-    const popular = $('#popular-chips');
+  // 검색어와 일치하는 칩만 연분홍 강조 (display는 건드리지 않음 - 칩은 항상 그대로 노출)
+  function highlightChips(query) {
     const container = $('#chips-container');
     if (!container) return;
     const chips = container.querySelectorAll('.chip');
     const norm = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(query || '');
-    let visible = 0;
     chips.forEach(c => {
-      if (!norm) {
-        c.style.display = '';
-        c.classList.remove('chip-match');
-        visible++;
-        return;
-      }
+      if (!norm) { c.classList.remove('chip-match'); return; }
       const cn = (window.PBTT.normalize || (s => (s||'').toLowerCase()))(c.dataset.query || '');
       const match = cn.includes(norm) || norm.includes(cn);
-      c.style.display = match ? '' : 'none';
-      // 검색어와 일치하는 칩은 연분홍 강조
-      if (match) {
-        c.classList.add('chip-match');
-        visible++;
-      } else {
-        c.classList.remove('chip-match');
-      }
+      if (match) c.classList.add('chip-match');
+      else c.classList.remove('chip-match');
     });
-    // 매칭 칩 0개면 popular 영역 자체 숨김
-    if (popular) popular.style.display = (norm && visible === 0) ? 'none' : '';
   }
 
   function setupChipsExpand() {
@@ -893,6 +878,7 @@
   function runSearch(query) {
     setRoute({ q: query, qa: null });
     renderResults(query);
+    highlightChips(query);
   }
   function debouncedSearch(query) {
     clearTimeout(_searchTimer);
@@ -1134,6 +1120,7 @@
       });
       input.addEventListener('input', () => {
         const q = input.value.trim();
+        highlightChips(q);
         debouncedSearch(q);
       });
     }
