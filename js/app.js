@@ -133,7 +133,7 @@
     const container = $('#chips-container');
     if (!container) return;
     container.innerHTML = POPULAR_QUERIES.map(q =>
-      `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+      `<button type="button" class="chip" data-query="${escapeHtml(q)}">#${escapeHtml(q)}</button>`
     ).join('');
     container.addEventListener('click', e => {
       const btn = e.target.closest('.chip');
@@ -239,7 +239,7 @@
           <p>다른 키워드로 다시 검색해보세요.</p>
           <div class="chips" style="justify-content: center;">
             ${POPULAR_QUERIES.slice(0, 8).map(q =>
-              `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+              `<button type="button" class="chip" data-query="${escapeHtml(q)}">#${escapeHtml(q)}</button>`
             ).join('')}
           </div>
         </div>
@@ -754,6 +754,83 @@
 
   window.addEventListener('popstate', handleRoute);
 
+  // ====== 검색창 자동 포커스 + 모바일 슬라이드 업 (akd-members 패턴) ======
+  function setupSearchUX(input) {
+    if (!input) return;
+    const hero = $('#hero');
+
+    // 데스크톱: 자동 포커스 (모바일은 가상 키보드 강제 호출 방지)
+    if (window.innerWidth > 768) {
+      setTimeout(() => input.focus({ preventScroll: true }), 50);
+    }
+
+    if (!hero) return;
+
+    let scrollAnim = null;
+    let blurDelayTimer = null;
+    let removeStyleTimer = null;
+    const clearAllPending = () => {
+      if (scrollAnim) { cancelAnimationFrame(scrollAnim); scrollAnim = null; }
+      if (blurDelayTimer) { clearTimeout(blurDelayTimer); blurDelayTimer = null; }
+      if (removeStyleTimer) { clearTimeout(removeStyleTimer); removeStyleTimer = null; }
+    };
+
+    // 모바일에서 검색창을 nav 바로 아래로 슬라이드 업
+    const slideSearchUp = () => {
+      if (window.innerWidth > 768) return;
+      if (hero.classList.contains('search-focused')) return;
+      const searchBox = document.querySelector('.search-form');
+      if (!searchBox) return;
+      clearAllPending();
+      // 정확한 위치 측정 위해 일시적으로 transform 제거
+      hero.style.transition = 'none';
+      hero.style.transform = 'none';
+      void hero.offsetHeight; // reflow
+      const rect = searchBox.getBoundingClientRect();
+      // navbar(56) + 약간의 여백(12) 아래로 위치
+      const shift = Math.min(0, -(rect.top - 68));
+      hero.style.transition = '';
+      hero.classList.add('search-focused');
+      hero.style.transform = shift === 0 ? '' : `translate3d(0, ${shift}px, 0)`;
+    };
+
+    const revertIfEmpty = () => {
+      if (input.value.trim()) return;
+      if (!hero.classList.contains('search-focused')) return;
+      hero.classList.remove('search-focused');
+      hero.style.transform = 'translate3d(0, 0, 0)';
+      removeStyleTimer = setTimeout(() => {
+        hero.style.transform = '';
+        removeStyleTimer = null;
+      }, 400);
+    };
+
+    input.addEventListener('focus', slideSearchUp);
+    // 재탭 폴백 (Android Chrome: blur 후에도 input이 포커스 유지될 수 있어 focus 이벤트가 안 뜸)
+    const reTap = () => setTimeout(slideSearchUp, 30);
+    input.addEventListener('pointerdown', reTap);
+    input.addEventListener('click', reTap);
+
+    input.addEventListener('blur', () => {
+      blurDelayTimer = setTimeout(() => {
+        revertIfEmpty();
+        blurDelayTimer = null;
+      }, 100);
+    });
+
+    // VisualViewport: 모바일 키보드 닫힘 감지 (Android 시스템 백버튼 등)
+    if (window.visualViewport) {
+      let lastKeyboardOpen = false;
+      window.visualViewport.addEventListener('resize', () => {
+        const keyboardOpen = (window.innerHeight - window.visualViewport.height) > 100;
+        if (lastKeyboardOpen && !keyboardOpen) {
+          if (!input.value.trim()) revertIfEmpty();
+        }
+        lastKeyboardOpen = keyboardOpen;
+      });
+    }
+  }
+
   // ====== 초기화 ======
   document.addEventListener('DOMContentLoaded', async () => {
     injectFAQJsonLd();
@@ -765,12 +842,15 @@
     if (form && input) {
       form.addEventListener('submit', e => {
         e.preventDefault();
+        input.blur(); // submit 시 키보드 내림
         runSearch(input.value.trim());
       });
       input.addEventListener('input', () => {
         debouncedSearch(input.value.trim());
       });
     }
+
+    setupSearchUX(input);
 
     await initFirebase();
     handleRoute();

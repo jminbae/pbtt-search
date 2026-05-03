@@ -168,6 +168,17 @@ main {
 .hero {
   text-align: center;
   padding: 56px 0 40px;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.hero h1, .hero .subtitle, .hero .popular {
+  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero.search-focused h1,
+.hero.search-focused .subtitle,
+.hero.search-focused .popular {
+  opacity: 0;
+  pointer-events: none;
 }
 .hero h1 {
   font-size: 32px;
@@ -236,19 +247,20 @@ main {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
 }
 .chip {
   display: inline-block;
-  padding: 6px 14px;
+  padding: 3px 10px;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition);
+  line-height: 1.5;
 }
 .chip:hover {
   border-color: var(--secondary);
@@ -422,7 +434,7 @@ main {
 }
 .qa-card .toggle-more:hover { color: var(--primary); }
 
-/* Tags */
+/* Tags - chip 스타일과 통일 */
 .qa-card .tags {
   display: flex;
   flex-wrap: wrap;
@@ -432,12 +444,22 @@ main {
   border-top: 1px dashed var(--border);
 }
 .qa-card .tag {
-  font-size: 12px;
-  color: var(--secondary);
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 12.5px;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: color var(--transition);
+  transition: all var(--transition);
+  line-height: 1.5;
 }
-.qa-card .tag:hover { color: var(--primary); text-decoration: underline; }
+.qa-card .tag:hover {
+  border-color: var(--secondary);
+  color: var(--primary);
+  background: var(--bg-soft);
+}
 
 /* Action bar */
 .qa-card .actions {
