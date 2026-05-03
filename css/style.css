@@ -879,14 +879,14 @@ main {
 
 @media (max-width: 700px) {
   .doctor-hero {
-    display: block;
-    position: relative;
+    display: block;             /* block flow: 텍스트 위, 인물 아래 */
+    position: static;
     padding: 14px 0 0;
-    min-height: 240px;
     margin-bottom: 18px;
+    min-height: 0;
   }
   .doctor-hero-info {
-    padding: 0 200px 14px 16px;  /* 좌측 들여쓰기 + 인물 자리 확보 */
+    padding: 0 16px 16px 16px;
     text-align: left;
   }
   .doctor-hero-name {
@@ -903,15 +903,16 @@ main {
     max-width: none;
   }
   .doctor-hero-photo-wrap {
-    position: absolute;
-    bottom: -1px;
-    right: 0;
-    width: 195px;                /* 165 → 195 더 키움 */
-    height: auto;
+    position: static;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 8px;
   }
   .doctor-hero-photo {
-    max-width: 195px;
-    max-height: 260px;           /* 220 → 260 더 키움 */
+    max-width: 220px;            /* 너무 거대하지 않게 */
+    max-height: 280px;
+    margin-bottom: -1px;
   }
 }
 .doctor-qa-heading {
