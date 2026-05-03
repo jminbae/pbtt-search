@@ -226,6 +226,7 @@ main {
   font-size: 16px;
   color: var(--text);
   outline: none;
+  text-align: center;
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -554,6 +555,22 @@ main {
   margin-bottom: 16px;
   padding-bottom: 0;
 }
+@media (max-width: 600px) {
+  .cat-tabs {
+    flex-wrap: nowrap;            /* 한 줄 고정 */
+    overflow-x: auto;
+    gap: 0 14px;
+    justify-content: flex-start;
+    padding: 0 4px;
+    scrollbar-width: none;
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0;
+    padding: 8px 2px;
+    font-size: 13px;
+  }
+}
 .cat-tab {
   padding: 10px 4px;
   border: none;
@@ -573,8 +590,8 @@ main {
 .cat-tab.cat-lifting.active   { color: #1565C0; border-bottom-color: #1565C0; background: none; }
 .cat-tab.cat-injection.active { color: #6A1B9A; border-bottom-color: #6A1B9A; background: none; }
 .cat-tab.cat-condition.active { color: #C62828; border-bottom-color: #C62828; background: none; }
-.cat-tab.cat-homecare.active  { color: #2E7D32; border-bottom-color: #2E7D32; background: none; }
-.cat-tab.cat-cosmetic.active  { color: #EF6C00; border-bottom-color: #EF6C00; background: none; }
+.cat-tab.cat-homecare.active  { color: #0277BD; border-bottom-color: #0277BD; background: none; }
+.cat-tab.cat-cosmetic.active  { color: #5D4037; border-bottom-color: #5D4037; background: none; }
 .cat-tab.cat-other.active     { color: #616161; border-bottom-color: #9E9E9E; background: none; }
 
 /* 칩/태그 디폴트는 색 없음 (기본 흰 배경 + 회색 글씨, 기존 .chip/.tag 스타일 그대로) */
@@ -586,9 +603,9 @@ main {
 .chip.chip-condition.chip-match,
 .qa-card .tag.tag-match.cat-condition { background: #FFEBEE; border-color: #EF9A9A; color: #C62828; }
 .chip.chip-homecare.chip-match,
-.qa-card .tag.tag-match.cat-homecare  { background: #E8F5E9; border-color: #A5D6A7; color: #2E7D32; }
+.qa-card .tag.tag-match.cat-homecare  { background: #E1F5FE; border-color: #81D4FA; color: #0277BD; }
 .chip.chip-cosmetic.chip-match,
-.qa-card .tag.tag-match.cat-cosmetic  { background: #FFF3E0; border-color: #FFCC80; color: #EF6C00; }
+.qa-card .tag.tag-match.cat-cosmetic  { background: #EFEBE9; border-color: #BCAAA4; color: #5D4037; }
 .chip.chip-other.chip-match,
 .qa-card .tag.tag-match.cat-other     { background: #F5F5F5; border-color: #BDBDBD; color: #424242; }
 
