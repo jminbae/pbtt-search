@@ -915,6 +915,7 @@
       document.title = '피부텐텐 Q&A. 피부과 전문의가 전하는 피부가 예뻐지는 모든 이야기';
       renderResults(q);
     }
+    highlightChips(q);
   }
 
   // ====== 원장 목록 / 단일 페이지 ======
