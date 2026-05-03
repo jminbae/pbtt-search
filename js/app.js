@@ -1057,8 +1057,8 @@
       main.style.transform = 'none';
       void main.offsetHeight;
       const rect = searchBox.getBoundingClientRect();
-      // navbar(56) + 여유(44) = 100px 위치 — 적당히 올라가되 가까이 붙지 않게
-      const TARGET_TOP = 100;
+      // navbar(56) + 여유(24) = 80px 위치 — 살짝 더 위로
+      const TARGET_TOP = 80;
       const shift = Math.min(0, -(rect.top - TARGET_TOP));
       main.style.transition = '';
       hero.classList.add('search-focused');
