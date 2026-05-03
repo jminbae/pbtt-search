@@ -1,0 +1,654 @@
+// =====================================================================
+// 피부텐텐 써치엔진 - 앱 (렌더링, 라우팅, 소셜 액션, 댓글)
+// =====================================================================
+
+(function () {
+  const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, search, highlight, groupByVideo } = window.PBTT;
+
+  // ====== Firebase 설정 (사용자가 README에 따라 채워 넣음) ======
+  // 비어 있으면 댓글 기능은 "준비 중"으로 표시됩니다.
+  const FIREBASE_CONFIG = {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    appId: ""
+  };
+  let firebaseEnabled = false;
+  let db = null;
+
+  // ====== LocalStorage 헬퍼 ======
+  const STORAGE = {
+    LIKES: 'pbtt_likes',     // {qaId: true}
+    SAVED: 'pbtt_saved',     // {qaId: timestamp}
+  };
+  const ls = {
+    get(key) {
+      try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+      catch { return {}; }
+    },
+    set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+  };
+
+  // ====== 유틸 ======
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+  function showToast(msg) {
+    const t = $('#toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  function fmtDate(s) {
+    // YYYY-MM-DD → YY.MM.DD
+    if (!s) return '';
+    const [y, m, d] = s.split('-');
+    return `${y.slice(2)}.${m}.${d}`;
+  }
+  async function sha256(text) {
+    const buf = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ====== Firebase 동적 로드 (설정이 있을 때만) ======
+  async function initFirebase() {
+    if (!FIREBASE_CONFIG.apiKey) return false;
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js');
+      const fs = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js');
+      const app = initializeApp(FIREBASE_CONFIG);
+      db = fs.getFirestore(app);
+      // expose for handlers
+      window._fs = fs;
+      firebaseEnabled = true;
+      return true;
+    } catch (e) {
+      console.warn('[Firebase] init failed', e);
+      return false;
+    }
+  }
+
+  // ====== FAQ JSON-LD 동적 주입 (24개 Q&A) ======
+  function injectFAQJsonLd() {
+    const script = $('#faq-jsonld');
+    if (!script) return;
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "name": "피부텐텐 써치엔진",
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": [".qa-card .question", ".qa-card .answer"]
+      },
+      "mainEntity": ALL_QAS.map(qa => ({
+        "@type": "Question",
+        "name": qa.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": qa.answer,
+          "author": {
+            "@type": "Person",
+            "name": qa.doctor + " 원장",
+            "jobTitle": "피부과 전문의"
+          }
+        }
+      }))
+    };
+    script.textContent = JSON.stringify(data);
+  }
+
+  // ====== Hash route 파싱 ======
+  function parseRoute() {
+    // ?q=...&qa=N or hash
+    const params = new URLSearchParams(location.search);
+    return {
+      q: params.get('q') || '',
+      qa: params.get('qa') ? parseInt(params.get('qa'), 10) : null,
+    };
+  }
+
+  function setRoute({ q, qa }) {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (qa) params.set('qa', String(qa));
+    const newUrl = location.pathname + (params.toString() ? '?' + params.toString() : '');
+    history.pushState({ q, qa }, '', newUrl);
+  }
+
+  // ====== 인기 검색어 칩 ======
+  function renderChips() {
+    const container = $('#chips-container');
+    if (!container) return;
+    container.innerHTML = POPULAR_QUERIES.map(q =>
+      `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+    ).join('');
+    container.addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      const q = btn.dataset.query;
+      $('#search-input').value = q;
+      runSearch(q);
+    });
+  }
+
+  // ====== 카드 HTML ======
+  function cardHtml(qa, query, isSinglePage = false) {
+    const doc = DOCTORS[qa.doctor];
+    const likes = ls.get(STORAGE.LIKES);
+    const saved = ls.get(STORAGE.SAVED);
+    const liked = !!likes[qa.id];
+    const isSaved = !!saved[qa.id];
+    const tags = qa.keywords.map(k =>
+      `<span class="tag" data-query="${escapeHtml(k)}">#${escapeHtml(k)}</span>`
+    ).join('');
+
+    const answerHtml = highlight(qa.answer, query);
+    const questionHtml = highlight(qa.question, query);
+    const doctorHtml = highlight(qa.doctor, query);
+
+    return `
+      <article class="qa-card" data-qa-id="${qa.id}" data-video-id="${qa.videoId}" itemscope itemtype="https://schema.org/Question">
+        <meta itemprop="name" content="${escapeHtml(qa.question)}">
+        <div class="doctor-row">
+          <img class="avatar" src="${doc.photo}" alt="${doc.name} 원장 프로필" loading="lazy" width="44" height="44">
+          <div class="doctor-info">
+            <div class="doctor-name">
+              ${doctorHtml} 원장
+              <span class="verified" title="피부과 전문의">✓</span>
+            </div>
+            <div class="doctor-meta">${doc.title} · ${escapeHtml(qa.videoTopic)} · ${fmtDate(qa.uploadDate)}</div>
+          </div>
+        </div>
+        <h3 class="question">${questionHtml}</h3>
+        <div class="answer ${isSinglePage ? '' : 'collapsed'}" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+          <span itemprop="text">${answerHtml}</span>
+        </div>
+        ${isSinglePage ? '' : '<button type="button" class="toggle-more">더보기 ▾</button>'}
+        <a class="yt-original" href="${qa.youtubeUrl}" target="_blank" rel="noopener">
+          ▶ 원본 영상 보기
+        </a>
+        <div class="tags">${tags}</div>
+        <div class="actions">
+          <button class="action-btn like-btn ${liked ? 'active' : ''}" data-action="like" aria-label="좋아요" aria-pressed="${liked}">
+            <svg viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="count like-count"></span>
+          </button>
+          <button class="action-btn save-btn ${isSaved ? 'saved' : ''}" data-action="save" aria-label="저장" aria-pressed="${isSaved}">
+            <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span>${isSaved ? '저장됨' : '저장'}</span>
+          </button>
+          <button class="action-btn comment-btn" data-action="comments" aria-label="댓글">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="count comment-count"></span>
+          </button>
+          <button class="action-btn share-btn" data-action="share" aria-label="공유">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>공유</span>
+          </button>
+        </div>
+        <div class="comments-section" hidden>
+          <div class="comments-list" data-qa-id="${qa.id}"></div>
+          <form class="comment-form" data-qa-id="${qa.id}">
+            <input type="text" name="author" placeholder="이름" maxlength="20" required>
+            <input type="password" name="password" placeholder="비밀번호 (수정/삭제용)" maxlength="20" required>
+            <textarea name="body" placeholder="댓글을 입력하세요..." maxlength="500" required></textarea>
+            <button type="submit">댓글 등록</button>
+          </form>
+          <div class="comments-status"></div>
+        </div>
+      </article>
+    `;
+  }
+
+  // ====== 결과 렌더링 ======
+  function renderResults(query) {
+    const root = $('#results');
+    const headerEl = $('#results-header');
+    if (!root) return;
+
+    const results = search(query);
+    const groups = groupByVideo(results);
+
+    // 헤더 표시
+    if (headerEl) {
+      if (query) {
+        headerEl.hidden = false;
+        headerEl.innerHTML = `<strong>"${escapeHtml(query)}"</strong> 검색 결과 ${results.length}건`;
+      } else {
+        headerEl.hidden = true;
+      }
+    }
+
+    if (results.length === 0) {
+      root.innerHTML = `
+        <div class="empty-state">
+          <h3>"${escapeHtml(query)}"에 해당하는 Q&A를 찾지 못했어요</h3>
+          <p>다른 키워드로 다시 검색해보세요.</p>
+          <div class="chips" style="justify-content: center;">
+            ${POPULAR_QUERIES.slice(0, 8).map(q =>
+              `<button type="button" class="chip" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+            ).join('')}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 영상 그룹별 렌더링
+    root.innerHTML = groups.map(g => {
+      const v = VIDEOS.find(vv => vv.id === g.videoId);
+      const cards = g.items.map((r, idx) => {
+        const html = cardHtml(r.qa, query);
+        // 스태거 애니메이션
+        return html.replace('<article ', `<article style="animation-delay:${idx * 70}ms" `);
+      }).join('');
+
+      return `
+        <section class="video-group" data-video-id="${v.id}">
+          <header class="video-group-header">
+            <div>
+              <div class="topic-badge">📌 ${escapeHtml(v.topic)}</div>
+              <div class="video-meta">${fmtDate(v.uploadDate)} · Q&A ${g.items.length}개</div>
+            </div>
+            <a class="yt-link" href="${v.youtubeUrl}" target="_blank" rel="noopener">▶ 영상 보기</a>
+          </header>
+          <div class="thread">${cards}</div>
+        </section>
+      `;
+    }).join('');
+
+    // 좋아요/댓글 카운트 비동기 로드
+    refreshCounts();
+  }
+
+  // ====== 단일 Q&A 페이지 (?qa=N) ======
+  function renderSingleQA(qaId) {
+    const qa = ALL_QAS.find(q => q.id === qaId);
+    const root = $('#results');
+    const headerEl = $('#results-header');
+    const hero = $('#hero');
+
+    if (!qa) {
+      root.innerHTML = `<div class="empty-state"><h3>Q&A를 찾을 수 없어요</h3></div>`;
+      return;
+    }
+
+    if (hero) hero.style.display = 'none';
+    if (headerEl) headerEl.hidden = true;
+
+    // 동적 메타 업데이트 (소셜 공유 미리보기용)
+    document.title = `${qa.question} | 피부텐텐 써치엔진`;
+    setMeta('description', qa.meta || qa.question);
+    setMeta('og:title', qa.question, true);
+    setMeta('og:description', qa.meta || '', true);
+
+    root.innerHTML = `
+      <div class="qa-detail">
+        <a href="./" class="back-link" data-route-link>← 목록으로 돌아가기</a>
+        ${cardHtml(qa, '', true)}
+      </div>
+    `;
+    refreshCounts();
+  }
+
+  function setMeta(name, content, isProperty = false) {
+    const attr = isProperty ? 'property' : 'name';
+    let el = document.querySelector(`meta[${attr}="${name}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attr, name);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', content);
+  }
+
+  // ====== 저장한 글 페이지 ======
+  function renderSavedPage() {
+    const root = $('#results');
+    if (!root) return;
+    const saved = ls.get(STORAGE.SAVED);
+    const ids = Object.keys(saved).map(Number);
+    if (ids.length === 0) {
+      root.innerHTML = `
+        <div class="saved-empty">
+          <h3>저장한 Q&A가 없습니다</h3>
+          <p style="margin-top:8px;"><a href="./">검색하러 가기 →</a></p>
+        </div>
+      `;
+      return;
+    }
+    // 최근 저장순
+    const items = ids
+      .map(id => ({ qa: ALL_QAS.find(q => q.id === id), savedAt: saved[id] }))
+      .filter(x => x.qa)
+      .sort((a, b) => b.savedAt - a.savedAt);
+
+    root.innerHTML = items.map(({ qa }, idx) => {
+      const html = cardHtml(qa, '');
+      return html.replace('<article ', `<article style="animation-delay:${idx * 60}ms" `);
+    }).join('');
+    refreshCounts();
+  }
+
+  // ====== 액션 핸들러 ======
+  document.addEventListener('click', async (e) => {
+    // 태그 클릭 → 검색
+    const tag = e.target.closest('.tag, .chip');
+    if (tag && tag.dataset.query) {
+      const q = tag.dataset.query;
+      const input = $('#search-input');
+      if (input) {
+        input.value = q;
+        runSearch(q);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // 다른 페이지에서 칩/태그 누르면 홈으로
+        location.href = `./?q=${encodeURIComponent(q)}`;
+      }
+      return;
+    }
+
+    // 더보기
+    const more = e.target.closest('.toggle-more');
+    if (more) {
+      const card = more.closest('.qa-card');
+      const ans = card.querySelector('.answer');
+      ans.classList.toggle('collapsed');
+      more.textContent = ans.classList.contains('collapsed') ? '더보기 ▾' : '접기 ▴';
+      return;
+    }
+
+    // 라우트 링크
+    const routeLink = e.target.closest('[data-route-link]');
+    if (routeLink) {
+      e.preventDefault();
+      history.pushState({}, '', routeLink.getAttribute('href'));
+      handleRoute();
+      return;
+    }
+
+    // 액션 버튼
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn) {
+      const card = actionBtn.closest('.qa-card');
+      const qaId = parseInt(card.dataset.qaId, 10);
+      const action = actionBtn.dataset.action;
+      if (action === 'like') handleLike(qaId, actionBtn);
+      else if (action === 'save') handleSave(qaId, actionBtn);
+      else if (action === 'share') handleShare(qaId);
+      else if (action === 'comments') toggleComments(card);
+      return;
+    }
+  });
+
+  function handleLike(qaId, btn) {
+    const likes = ls.get(STORAGE.LIKES);
+    const newState = !likes[qaId];
+    if (newState) likes[qaId] = true;
+    else delete likes[qaId];
+    ls.set(STORAGE.LIKES, likes);
+
+    // UI 즉시 반영
+    btn.classList.toggle('active', newState);
+    btn.setAttribute('aria-pressed', newState);
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', newState ? 'currentColor' : 'none');
+    showToast(newState ? '좋아요!' : '좋아요 취소');
+
+    // Firebase에도 기록 (선택)
+    if (firebaseEnabled) {
+      try {
+        const { doc, setDoc, increment, deleteField } = window._fs;
+        setDoc(doc(db, 'qa_likes', String(qaId)), {
+          count: increment(newState ? 1 : -1),
+          updatedAt: Date.now()
+        }, { merge: true }).then(refreshCounts);
+      } catch (e) { console.warn(e); }
+    }
+  }
+
+  function handleSave(qaId, btn) {
+    const saved = ls.get(STORAGE.SAVED);
+    const newState = !saved[qaId];
+    if (newState) saved[qaId] = Date.now();
+    else delete saved[qaId];
+    ls.set(STORAGE.SAVED, saved);
+    btn.classList.toggle('saved', newState);
+    btn.setAttribute('aria-pressed', newState);
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', newState ? 'currentColor' : 'none');
+    btn.querySelector('span').textContent = newState ? '저장됨' : '저장';
+    showToast(newState ? '저장했어요' : '저장을 취소했어요');
+  }
+
+  async function handleShare(qaId) {
+    const url = `${location.origin}${location.pathname.replace(/saved\.html$/, '')}?qa=${qaId}`;
+    const qa = ALL_QAS.find(q => q.id === qaId);
+    const shareData = {
+      title: qa ? qa.question : '피부텐텐 써치엔진',
+      text: qa ? qa.question : '피부과 전문의 Q&A 검색',
+      url
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); return; } catch (e) { /* user cancelled */ }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('링크가 복사되었어요');
+    } catch {
+      prompt('링크 복사:', url);
+    }
+  }
+
+  function toggleComments(card) {
+    const sec = card.querySelector('.comments-section');
+    if (!sec) return;
+    sec.hidden = !sec.hidden;
+    if (!sec.hidden) loadComments(parseInt(card.dataset.qaId, 10), card);
+  }
+
+  // ====== 댓글 ======
+  async function loadComments(qaId, card) {
+    const list = card.querySelector('.comments-list');
+    const status = card.querySelector('.comments-status');
+    if (!list || !status) return;
+
+    if (!firebaseEnabled) {
+      status.innerHTML = '댓글 기능은 준비 중입니다. (관리자 Firebase 설정 필요)';
+      return;
+    }
+
+    status.textContent = '댓글을 불러오는 중...';
+    try {
+      const { collection, query, where, orderBy, getDocs } = window._fs;
+      const q = query(
+        collection(db, 'comments'),
+        where('qaId', '==', qaId),
+        orderBy('createdAt', 'desc')
+      );
+      const snap = await getDocs(q);
+      const docs = [];
+      snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+      list.innerHTML = docs.map(c => commentHtml(c)).join('') || '<div class="comments-status">아직 댓글이 없어요. 첫 댓글을 남겨보세요!</div>';
+      status.textContent = '';
+    } catch (e) {
+      status.textContent = '댓글을 불러오지 못했어요.';
+      console.error(e);
+    }
+  }
+
+  function commentHtml(c) {
+    const date = c.createdAt ? new Date(c.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    return `
+      <div class="comment" data-comment-id="${c.id}">
+        <div class="comment-header">
+          <span class="comment-author">${escapeHtml(c.author || '익명')}</span>
+          <span class="comment-date">${escapeHtml(date)}</span>
+        </div>
+        <div class="comment-body">${escapeHtml(c.body || '')}</div>
+        <div class="comment-actions">
+          <button data-action="delete-comment">삭제</button>
+        </div>
+      </div>
+    `;
+  }
+
+  document.addEventListener('submit', async (e) => {
+    if (!e.target.classList.contains('comment-form')) return;
+    e.preventDefault();
+    const form = e.target;
+    const qaId = parseInt(form.dataset.qaId, 10);
+    const card = form.closest('.qa-card');
+    const btn = form.querySelector('button[type="submit"]');
+    const status = card.querySelector('.comments-status');
+
+    if (!firebaseEnabled) {
+      status.textContent = '댓글 기능이 아직 활성화되지 않았어요.';
+      return;
+    }
+
+    const author = form.author.value.trim();
+    const password = form.password.value;
+    const body = form.body.value.trim();
+    if (!author || !password || !body) return;
+
+    btn.disabled = true;
+    status.textContent = '등록 중...';
+    try {
+      const passHash = await sha256(password);
+      const { collection, addDoc } = window._fs;
+      await addDoc(collection(db, 'comments'), {
+        qaId, author, body, passHash,
+        createdAt: Date.now()
+      });
+      form.reset();
+      status.textContent = '';
+      await loadComments(qaId, card);
+    } catch (e) {
+      status.textContent = '등록 실패: ' + e.message;
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('[data-action="delete-comment"]');
+    if (!delBtn) return;
+    if (!firebaseEnabled) return;
+    const commentDiv = delBtn.closest('.comment');
+    const commentId = commentDiv.dataset.commentId;
+    const card = delBtn.closest('.qa-card');
+    const qaId = parseInt(card.dataset.qaId, 10);
+    const pw = prompt('댓글 비밀번호를 입력하세요');
+    if (!pw) return;
+    try {
+      const passHash = await sha256(pw);
+      const { doc, getDoc, deleteDoc } = window._fs;
+      const ref = doc(db, 'comments', commentId);
+      const snap = await getDoc(ref);
+      if (!snap.exists() || snap.data().passHash !== passHash) {
+        alert('비밀번호가 일치하지 않아요.'); return;
+      }
+      await deleteDoc(ref);
+      await loadComments(qaId, card);
+      showToast('댓글이 삭제되었어요');
+    } catch (e) { alert('삭제 실패: ' + e.message); }
+  });
+
+  // ====== 좋아요/댓글 카운트 새로고침 ======
+  async function refreshCounts() {
+    // 항상 본인 좋아요만 표시 (Firebase 없을 때)
+    $$('.like-btn').forEach(btn => {
+      const card = btn.closest('.qa-card');
+      const cnt = card.querySelector('.like-count');
+      if (cnt && !firebaseEnabled) cnt.textContent = '';
+    });
+    $$('.comment-count').forEach(el => el.textContent = '');
+
+    if (!firebaseEnabled) return;
+    try {
+      const { collection, getDocs, query, where } = window._fs;
+      // 좋아요 카운트 일괄 조회
+      const visibleIds = $$('.qa-card').map(c => parseInt(c.dataset.qaId, 10));
+      for (const qaId of visibleIds) {
+        // 좋아요
+        const { doc, getDoc } = window._fs;
+        try {
+          const lsnap = await getDoc(doc(db, 'qa_likes', String(qaId)));
+          const cnt = lsnap.exists() ? (lsnap.data().count || 0) : 0;
+          const card = document.querySelector(`.qa-card[data-qa-id="${qaId}"]`);
+          if (card) {
+            const el = card.querySelector('.like-count');
+            if (el) el.textContent = cnt > 0 ? cnt : '';
+          }
+        } catch {}
+      }
+    } catch (e) { console.warn(e); }
+  }
+
+  // ====== 검색 실행 ======
+  let _searchTimer;
+  function runSearch(query) {
+    setRoute({ q: query, qa: null });
+    renderResults(query);
+  }
+  function debouncedSearch(query) {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => runSearch(query), 150);
+  }
+
+  // ====== 라우팅 ======
+  function handleRoute() {
+    const { q, qa } = parseRoute();
+
+    // saved.html 인지 확인
+    if (location.pathname.endsWith('saved.html')) {
+      renderSavedPage();
+      return;
+    }
+
+    const input = $('#search-input');
+    if (input && input.value !== q) input.value = q;
+
+    if (qa) {
+      renderSingleQA(qa);
+    } else {
+      const hero = $('#hero');
+      if (hero) hero.style.display = '';
+      // 메타 복원
+      document.title = '피부텐텐 써치엔진 | 피부과 전문의 Q&A 검색';
+      renderResults(q);
+    }
+  }
+
+  window.addEventListener('popstate', handleRoute);
+
+  // ====== 초기화 ======
+  document.addEventListener('DOMContentLoaded', async () => {
+    injectFAQJsonLd();
+    renderChips();
+
+    // 검색 폼
+    const form = $('#search-form');
+    const input = $('#search-input');
+    if (form && input) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        runSearch(input.value.trim());
+      });
+      input.addEventListener('input', () => {
+        debouncedSearch(input.value.trim());
+      });
+    }
+
+    await initFirebase();
+    handleRoute();
+  });
+})();

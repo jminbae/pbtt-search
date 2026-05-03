@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1B4965">
+
+  <title>피부텐텐 써치엔진 | 피부과 전문의 Q&A 검색</title>
+  <meta name="description" content="쥬브젠, 팔자주름, 힐로웨이브, 경락, 울쎄라, 보톡스, 필러 등 피부과 시술 궁금증을 피부과 전문의가 답변한 Q&A로 빠르게 검색하세요. 정한미·박효진·김수형·이도영·권수현 5인 원장의 24개 답변 수록.">
+  <meta name="keywords" content="피부과 Q&A, 피부시술, 쥬브젠, 팔자주름, 힐로웨이브, 경락, 울쎄라, 보톡스, 필러, 입가주름, 스컬트라, 땅콩형 얼굴, 리프팅, 콜라겐, 리쥬란, 피부과 전문의 답변, 피부시술 검색">
+  <meta name="author" content="피부텐텐">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="./">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:site_name" content="피부텐텐 써치엔진">
+  <meta property="og:title" content="피부텐텐 써치엔진 | 피부과 전문의 Q&A 검색">
+  <meta property="og:description" content="쥬브젠·팔자주름·힐로웨이브·경락·울쎄라·보톡스·필러 등 피부시술 궁금증을 피부과 전문의 답변으로 검색.">
+  <meta property="og:image" content="./images/doctors/jung-hanmi.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="피부텐텐 써치엔진">
+  <meta name="twitter:description" content="피부과 전문의가 답변한 시술 Q&A 검색엔진">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231B4965'/%3E%3Ctext x='50' y='66' font-size='52' font-family='sans-serif' font-weight='800' fill='white' text-anchor='middle'%3E피%3C/text%3E%3C/svg%3E">
+
+  <!-- ====== AEO/GEO/SEO: FAQPage Structured Data ====== -->
+  <script type="application/ld+json" id="faq-jsonld">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "name": "피부텐텐 써치엔진",
+    "url": "./",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".qa-card .question", ".qa-card .answer"]
+    },
+    "mainEntity": []
+  }
+  </script>
+  <!-- WebSite + SearchAction (Google sitelinks search box) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "피부텐텐 써치엔진",
+    "url": "./",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <!-- Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MedicalOrganization",
+    "name": "피부텐텐",
+    "description": "피부과 전문의가 답변하는 피부시술 Q&A 검색엔진",
+    "medicalSpecialty": "Dermatology"
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="./" class="logo" aria-label="홈">
+        <span class="logo-mark">피</span>
+        <span>피부텐텐 써치엔진</span>
+      </a>
+      <nav class="header-nav">
+        <a href="./" class="active">검색</a>
+        <a href="./saved.html">저장한 글</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="hero">
+      <h1>피부 고민, 검색해보세요</h1>
+      <p class="subtitle">피부과 전문의가 답변한 시술 Q&A를 한 번에</p>
+
+      <form class="search-form" id="search-form" role="search">
+        <input
+          type="search"
+          class="search-input"
+          id="search-input"
+          name="q"
+          placeholder="쥬브젠, 팔자주름, 힐로웨이브..."
+          autocomplete="off"
+          autofocus
+          aria-label="Q&A 검색"
+        >
+        <button type="submit" class="search-btn" aria-label="검색">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+      </form>
+
+      <div class="popular" id="popular-chips">
+        <div class="popular-label">인기 검색어</div>
+        <div class="chips" id="chips-container"></div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section id="results-header" class="results-header" hidden></section>
+    <section id="results" aria-live="polite"></section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© 2026 피부텐텐 · 피부과 전문의 Q&A 검색엔진</div>
+    <div class="links">
+      <a href="./saved.html">저장한 글</a>
+      <span>·</span>
+      <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

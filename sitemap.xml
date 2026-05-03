@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>./</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>./?qa=101</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=102</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=103</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=104</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=201</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=202</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=203</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=204</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=301</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=302</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=303</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=304</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=401</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=402</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=403</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=404</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=501</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=502</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=503</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=504</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=601</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=602</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=603</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=604</loc><priority>0.8</priority></url>
+</urlset>
