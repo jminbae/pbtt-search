@@ -175,35 +175,13 @@
       }
     }
 
-    // 점수 desc 정렬 → 같은 점수 묶음 안에서 셔플 + 원장 라운드로빈
-    // (같은 원장이 연달아 나오는 걸 최소화하여 글쓴이 다양성 보장)
-    results.sort((a, b) => b.score - a.score);
-
-    const out = [];
-    let i = 0;
-    while (i < results.length) {
-      let j = i;
-      while (j < results.length && results[j].score === results[i].score) j++;
-      const chunk = results.slice(i, j);
-      // Fisher-Yates 셔플
-      for (let k = chunk.length - 1; k > 0; k--) {
-        const r = Math.floor(Math.random() * (k + 1));
-        [chunk[k], chunk[r]] = [chunk[r], chunk[k]];
-      }
-      // 원장별 큐 만들고 라운드로빈으로 추출
-      const byDoc = {}, docOrder = [];
-      for (const r of chunk) {
-        if (!byDoc[r.qa.doctor]) { byDoc[r.qa.doctor] = []; docOrder.push(r.qa.doctor); }
-        byDoc[r.qa.doctor].push(r);
-      }
-      while (docOrder.some(d => byDoc[d].length)) {
-        for (const d of docOrder) {
-          if (byDoc[d].length) out.push(byDoc[d].shift());
-        }
-      }
-      i = j;
-    }
-    return out;
+    // 점수 desc 정렬 → 같은 점수 묶음 안에서만 랜덤 셔플 (점수 우위는 보존)
+    for (const r of results) r._r = Math.random();
+    results.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a._r - b._r;
+    });
+    return results;
   }
 
   // 검색어 하이라이트용: HTML-safe + <mark> 래핑
