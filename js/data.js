@@ -1074,17 +1074,23 @@ const VIDEOS = [
   },
 ];
 
-// 인기 검색어 (홈 칩) - 자주 검색될 만한 키워드
-const POPULAR_QUERIES = [
-  "쥬브젠", "팔자주름", "힐로웨이브", "경락",
-  "울쎄라", "보톡스", "필러", "입가주름",
-  "스컬트라", "땅콩형 얼굴", "리프팅", "리쥬란",
-  "쥬베룩", "사각턱 보톡스", "결절", "스킨부스터",
-  "마리오네트", "목주름", "이마주름", "미간주름",
-  "다이어트", "콜라겐", "써마지", "보습",
-  "30대 리프팅", "50대 주름", "꺼진 얼굴", "V라인",
-  "레티놀", "자외선 차단", "인중주름", "교근"
-];
+// 인기 검색어 (홈 칩) - 모든 Q&A 키워드의 등장 빈도로 동적 생성
+// 영상이 추가될수록 자동으로 갱신됨
+const POPULAR_QUERIES = (function () {
+  const counts = {};
+  for (const v of VIDEOS) {
+    for (const qa of v.qas) {
+      for (const kw of (qa.keywords || [])) {
+        counts[kw] = (counts[kw] || 0) + 1;
+      }
+    }
+  }
+  // 빈도 desc → 동률이면 가나다순. 상위 36개 노출
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ko'))
+    .slice(0, 36)
+    .map(([k]) => k);
+})();
 
 // 평탄화된 Q&A 배열 (검색 인덱스용)
 const ALL_QAS = VIDEOS.flatMap(v =>
