@@ -620,21 +620,25 @@ main {
 .qa-card.is-hot  { border-left: 3px solid #F8BBD0; }   /* 연한 핑크 */
 .qa-card.is-pick { border-left: 3px solid #BBDEFB; }   /* 연한 블루 */
 .qa-card.is-hot.is-pick { border-left: 3px solid #E1BEE7; }   /* 연한 보라 */
-.card-badge {
+/* 배지 컨테이너: 우상단에 좌우 나란히 배치 */
+.card-badges {
   position: absolute;
   top: 12px;
   right: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.card-badge {
   padding: 3px 10px;
   font-size: 11px;
   font-weight: 700;
   border-radius: var(--radius-pill);
   letter-spacing: 0.3px;
-  z-index: 1;
 }
 /* 배지: 좌측바와 동일한 연한 톤. 가독성 위해 글씨는 진한 색 유지 */
 .badge-hot  { background: #FCE4EC; color: #C2185B; border: 1px solid #F8BBD0; }
 .badge-pick { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
-.qa-card.is-hot.is-pick .badge-pick { top: 38px; }
 
 /* Action bar */
 .qa-card .actions {

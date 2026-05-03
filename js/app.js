@@ -264,8 +264,12 @@
     if (isHot) cardCls += ' is-hot';
     if (isPick) cardCls += ' is-pick';
     let badge = '';
-    if (isHot) badge += '<span class="card-badge badge-hot">HOT</span>';
-    if (isPick) badge += '<span class="card-badge badge-pick">Pick</span>';
+    if (isHot || isPick) {
+      badge = '<div class="card-badges">'
+        + (isHot  ? '<span class="card-badge badge-hot">HOT</span>'   : '')
+        + (isPick ? '<span class="card-badge badge-pick">Pick</span>' : '')
+        + '</div>';
+    }
 
     return `
       <article class="${cardCls}" data-qa-id="${qa.id}" data-video-id="${qa.videoId}" itemscope itemtype="https://schema.org/Question">
