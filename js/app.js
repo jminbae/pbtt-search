@@ -893,8 +893,6 @@
   function runSearch(query) {
     setRoute({ q: query, qa: null });
     renderResults(query);
-    // 검색 시 인기 키워드 칩도 매칭 강조 동기화
-    filterChips(query);
   }
   function debouncedSearch(query) {
     clearTimeout(_searchTimer);
@@ -1136,7 +1134,6 @@
       });
       input.addEventListener('input', () => {
         const q = input.value.trim();
-        filterChips(q);
         debouncedSearch(q);
       });
     }
