@@ -850,31 +850,32 @@ main {
   box-shadow: none;
   background: transparent;
 }
-.doctor-hero-branch {
-  display: block;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-weight: 500;
-}
-.doctor-hero-name {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--primary);
-  margin: 0 0 22px;
-  letter-spacing: -0.7px;
-  line-height: 1.1;
-}
+/* 새 순서: 멘트 → 이름 → 소속 */
 .doctor-hero-intro {
   font-size: 14.5px;
   color: var(--text);
   line-height: 1.7;
   max-width: 420px;
-  margin: 0;
+  margin: 0 0 22px;            /* 멘트 → 이름 넉넉하게 */
   white-space: pre-line;
+}
+.doctor-hero-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 6px;             /* 이름 → 소속 짧게 */
+  letter-spacing: -0.7px;
+  line-height: 1.1;
+}
+.doctor-hero-branch {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-weight: 500;
 }
 
 @media (max-width: 700px) {
@@ -889,19 +890,20 @@ main {
     padding: 0 180px 16px 16px;  /* 좌상단 글 + 우측 인물 자리 확보 */
     text-align: left;
   }
-  .doctor-hero-name {
-    font-size: 22px;
-    margin-bottom: 12px;
-  }
-  .doctor-hero-branch {
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
   .doctor-hero-intro {
     font-size: 13.5px;
     line-height: 1.6;
     max-width: none;
     white-space: normal;          /* 좁은 폭에서 자연스러운 자동 줄바꿈 */
+    margin-bottom: 14px;
+  }
+  .doctor-hero-name {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .doctor-hero-branch {
+    font-size: 12px;
+    margin: 0;
   }
   .doctor-hero-photo-wrap {
     position: absolute;

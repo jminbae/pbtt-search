@@ -988,9 +988,9 @@
     root.innerHTML = `
       <header class="doctor-hero">
         <div class="doctor-hero-info">
-          <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
-          <h1 class="doctor-hero-name">${escapeHtml(doctor.name)}</h1>
           <p class="doctor-hero-intro">${escapeHtml(doctor.intro || '')}</p>
+          <h1 class="doctor-hero-name">${escapeHtml(doctor.name)}</h1>
+          <div class="doctor-hero-branch">${escapeHtml(affiliation)}</div>
         </div>
         <div class="doctor-hero-photo-wrap">
           <img class="doctor-hero-photo" src="images/doctors-large/${doctor.slug}.png" alt="${doctor.name} 원장" loading="eager"
