@@ -531,6 +531,7 @@ main {
   transition: all var(--transition);
 }
 .qa-card .action-btn:hover { color: var(--primary); background: var(--bg-soft); }
+.qa-card .action-btn.read-stat { cursor: default; pointer-events: none; }
 .qa-card .action-btn.active { color: #e0245e; }
 .qa-card .action-btn.saved { color: #f5a623; }
 .qa-card .action-btn svg { width: 16px; height: 16px; }

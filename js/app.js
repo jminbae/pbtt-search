@@ -20,7 +20,8 @@
   // abacus.jasoncameron.dev: 한 번 hit하면 +1, get으로 조회. 한 브라우저당 글당 1회만 hit.
   const COUNTER_NS = 'pbtt-search';
   const COUNTER_BASE = 'https://abacus.jasoncameron.dev';
-  const COUNTER_CACHE = new Map(); // qaId -> count
+  const COUNTER_CACHE = new Map();   // qaId -> like count
+  const READ_CACHE = new Map();      // qaId -> read(more) count
 
   // ====== LocalStorage 헬퍼 ======
   const STORAGE = {
@@ -227,9 +228,13 @@
         </a>
         <div class="tags">${tags}</div>
         <div class="actions">
+          <span class="action-btn read-stat" aria-label="조회수" title="조회수">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="count read-count">0</span>
+          </span>
           <button class="action-btn like-btn ${liked ? 'active' : ''}" data-action="like" aria-label="좋아요" aria-pressed="${liked}">
             <svg viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span class="count like-count"></span>
+            <span class="count like-count">0</span>
           </button>
           <button class="action-btn comment-btn" data-action="comments" aria-label="댓글">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -563,7 +568,20 @@
     if (hits[qaId]) return;
     hits[qaId] = true;
     ls.set(STORAGE.MORE_HIT, hits);
-    fetch(`${COUNTER_BASE}/hit/${COUNTER_NS}/qa-${qaId}-more`).catch(() => {});
+    fetch(`${COUNTER_BASE}/hit/${COUNTER_NS}/qa-${qaId}-more`).then(r => r.ok ? r.json() : null).then(data => {
+      if (data) {
+        const cnt = data.value ?? data.count ?? 0;
+        READ_CACHE.set(qaId, cnt);
+        updateReadCount(qaId, cnt);
+      }
+    }).catch(() => {});
+  }
+
+  function updateReadCount(qaId, count) {
+    const cnt = (count == null) ? '0' : (count > 999 ? `${(count/1000).toFixed(1)}k` : String(count));
+    document.querySelectorAll(`.qa-card[data-qa-id="${qaId}"] .read-count`).forEach(el => {
+      el.textContent = cnt;
+    });
   }
 
   async function handleLike(qaId, btn) {
@@ -600,7 +618,7 @@
   }
 
   function updateLikeCount(qaId, count) {
-    const cnt = (count == null) ? '' : (count > 999 ? `${(count/1000).toFixed(1)}k` : String(count));
+    const cnt = (count == null) ? '0' : (count > 999 ? `${(count/1000).toFixed(1)}k` : String(count));
     document.querySelectorAll(`.qa-card[data-qa-id="${qaId}"] .like-count`).forEach(el => {
       el.textContent = cnt;
     });
@@ -774,30 +792,48 @@
     } catch (e) { alert('삭제 실패: ' + e.message); }
   });
 
-  // ====== 좋아요 카운트 새로고침 (abacus API) ======
+  // ====== 좋아요/조회수 카운트 새로고침 (abacus API) ======
   async function refreshCounts() {
     const visibleIds = $$('.qa-card').map(c => parseInt(c.dataset.qaId, 10));
     // 캐시 우선 표시 → 실제 fetch
     visibleIds.forEach(id => {
       if (COUNTER_CACHE.has(id)) updateLikeCount(id, COUNTER_CACHE.get(id));
+      if (READ_CACHE.has(id)) updateReadCount(id, READ_CACHE.get(id));
     });
 
-    // 가시 카드들의 카운트 병렬 조회
-    await Promise.allSettled(visibleIds.map(async (qaId) => {
-      try {
-        const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/qa-${qaId}`);
-        if (res.ok) {
-          const data = await res.json();
-          const cnt = data.value ?? data.count ?? 0;
-          COUNTER_CACHE.set(qaId, cnt);
-          updateLikeCount(qaId, cnt);
-        } else if (res.status === 404) {
-          // 해당 키가 아직 없음 (아무도 좋아요 안 함)
-          COUNTER_CACHE.set(qaId, 0);
-          updateLikeCount(qaId, 0);
-        }
-      } catch (e) { /* 네트워크 오류 무시 */ }
-    }));
+    // 가시 카드들의 like + read(more) 카운트 병렬 조회
+    await Promise.allSettled(visibleIds.flatMap(qaId => [
+      // like
+      (async () => {
+        try {
+          const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/qa-${qaId}`);
+          if (res.ok) {
+            const data = await res.json();
+            const cnt = data.value ?? data.count ?? 0;
+            COUNTER_CACHE.set(qaId, cnt);
+            updateLikeCount(qaId, cnt);
+          } else if (res.status === 404) {
+            COUNTER_CACHE.set(qaId, 0);
+            updateLikeCount(qaId, 0);
+          }
+        } catch {}
+      })(),
+      // read(more)
+      (async () => {
+        try {
+          const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/qa-${qaId}-more`);
+          if (res.ok) {
+            const data = await res.json();
+            const cnt = data.value ?? data.count ?? 0;
+            READ_CACHE.set(qaId, cnt);
+            updateReadCount(qaId, cnt);
+          } else if (res.status === 404) {
+            READ_CACHE.set(qaId, 0);
+            updateReadCount(qaId, 0);
+          }
+        } catch {}
+      })(),
+    ]));
 
     // 댓글 카운트 (Firebase 활성화된 경우)
     $$('.comment-count').forEach(el => el.textContent = '');

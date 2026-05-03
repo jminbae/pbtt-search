@@ -25,4 +25,43 @@
   <url><loc>./?qa=602</loc><priority>0.8</priority></url>
   <url><loc>./?qa=603</loc><priority>0.8</priority></url>
   <url><loc>./?qa=604</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=701</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=702</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=703</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=704</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=801</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=802</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=803</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=804</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=901</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=902</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=903</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=904</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1001</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1002</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1003</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1004</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1101</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1102</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1103</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1104</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1201</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1202</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1203</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1204</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1301</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1302</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1303</loc><priority>0.8</priority></url>
+  <url><loc>./?qa=1304</loc><priority>0.8</priority></url>
+  <url><loc>./doctors.html?slug=kwon-soohyun</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=kim-soohyung</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=park-hyojin</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=lee-doyoung</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=jung-hanmi</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=go-hyerim</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=kim-jongsik</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=bae-jungmin</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html?slug=kang-hyunjin</loc><priority>0.7</priority></url>
+  <url><loc>./doctors.html</loc><priority>0.6</priority></url>
+  <url><loc>./popular.html</loc><priority>0.6</priority></url>
 </urlset>
