@@ -830,11 +830,11 @@ main {
 .doctor-hero-info {
   display: flex;
   flex-direction: column;
-  padding: 70px 24px 22px 40px;  /* 위 여백 → 멘트가 중앙 살짝 위 */
+  padding: 96px 24px 56px 40px;  /* 위 더↑ 아래 더↑ — 멘트는 중앙 가까이, 메타는 살짝 위로 */
   text-align: left;
 }
 .doctor-hero-meta {
-  margin-top: auto;              /* 이름·소속을 컨테이너 하단으로 push */
+  margin-top: auto;              /* 이름·소속을 padding-bottom 위치로 push */
 }
 .doctor-hero-photo-wrap {
   display: flex;
@@ -895,10 +895,12 @@ main {
     text-align: left;
   }
   .doctor-hero-info {
-    display: block;               /* 모바일은 일반 block 흐름 */
-    padding: 0 180px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;             /* 인물 높이만큼 */
+    padding: 28px 180px 14px 16px; /* 위·아래 여유 */
   }
-  .doctor-hero-meta { margin-top: 14px; }
+  .doctor-hero-meta { margin-top: auto; }
   .doctor-hero-intro {
     font-size: 13.5px;
     line-height: 1.6;
