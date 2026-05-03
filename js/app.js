@@ -270,7 +270,16 @@
     const meaningful = isMeaningfulQuery(query);
     const effectiveQuery = meaningful ? query : '';
     const results = search(effectiveQuery);
-    const groups = groupByVideo(results);
+    // 검색어 있을 때: 영상별 그룹화 없이 개별 Q&A 점수순으로 (여러 원장 섞여 노출)
+    // 빈 쿼리(전체 목록): 영상별 묶음 유지
+    const groups = effectiveQuery
+      ? results.map(r => ({
+          videoId: r.qa.videoId,
+          totalScore: r.score,
+          items: [r],
+          uploadDate: r.qa.uploadDate,
+        }))
+      : groupByVideo(results);
 
     // 헤더 표시 (의미 있는 쿼리일 때만)
     if (headerEl) {
