@@ -327,25 +327,23 @@ main {
   margin-right: auto;
 }
 
-/* 데스크탑: 검색 결과 영상 그룹을 2열로 (쓰레드 유지, 폭 활용) */
+/* 데스크탑: 검색 결과 영상 그룹을 2열 grid로 (좌→우→좌→우 순서) */
 @media (min-width: 900px) {
   #results {
-    column-count: 2;
-    column-gap: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+    align-items: start;
     max-width: 1080px;
     margin-left: auto;
     margin-right: auto;
   }
   .video-group {
     max-width: none;
-    margin: 0 0 24px;
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    page-break-inside: avoid;
+    margin: 0;
   }
   .load-sentinel {
-    column-span: all;
-    -webkit-column-span: all;
+    grid-column: 1 / -1;
   }
 }
 .video-group-header {
@@ -384,30 +382,9 @@ main {
 }
 .video-group-header .yt-link:hover { background: rgba(255, 0, 0, 0.12); }
 
-/* Thread connector */
+/* Thread (커넥터 세로선 제거) */
 .thread {
   position: relative;
-  padding-left: 0;
-}
-.thread::before {
-  content: '';
-  position: absolute;
-  left: 27px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, var(--secondary-light), var(--bg));
-  z-index: 0;
-}
-.thread .qa-card:last-child::before {
-  content: '';
-  position: absolute;
-  left: -29px;
-  top: 36px;
-  bottom: 0;
-  width: 2px;
-  background: var(--bg);
-  z-index: 1;
 }
 
 /* ============== QA Card ============== */
