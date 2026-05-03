@@ -491,43 +491,23 @@
   }
 
   // ====== 인기글 페이지 ======
-  // 인기 점수 = 글로벌 좋아요 수 + 펼침(더보기) 카운트 (모두 abacus에 누적)
+  // 인기 점수 = 본인 활동(localStorage) + 글로벌 좋아요/펼침 (lazy fetch)
   async function renderPopularPage() {
     const root = $('#results');
     if (!root) return;
     document.title = '인기글 | 피부텐텐 Q&A';
-    root.innerHTML = '<div class="popular-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
 
-    // 모든 카드의 like + more 카운트 병렬 fetch
-    const fetchCount = async (key) => {
-      try {
-        const res = await fetch(`${COUNTER_BASE}/get/${COUNTER_NS}/${key}`);
-        if (res.ok) {
-          const d = await res.json();
-          return d.value ?? d.count ?? 0;
-        }
-      } catch {}
-      return 0;
-    };
-
-    // 본인 활동(localStorage)도 카운트에 반영 (글로벌 fetch 실패해도 인기 표시)
+    // 본인 활동 기반 점수 (즉시 계산 - fetch 대기 없음)
     const myLikes = ls.get(STORAGE.LIKES);
     const myReads = ls.get(STORAGE.MORE_HIT);
-
-    const scored = await Promise.all(ALL_QAS.map(async (qa) => {
-      const [globalLike, globalMore] = await Promise.all([
-        fetchCount(`qa-${qa.id}`),
-        fetchCount(`qa-${qa.id}-more`),
-      ]);
-      // 캐시에 저장 (이후 cardHtml 그릴 때 활용)
-      COUNTER_CACHE.set(qa.id, globalLike);
-      READ_CACHE.set(qa.id, globalMore);
-      // 글로벌 카운트 vs 본인 활동 중 큰 값 (본인은 0 또는 1)
+    const scored = ALL_QAS.map(qa => {
+      // 캐시에 글로벌 카운트가 있으면 우선 사용
+      const globalLike = COUNTER_CACHE.has(qa.id) ? COUNTER_CACHE.get(qa.id) : 0;
+      const globalMore = READ_CACHE.has(qa.id) ? READ_CACHE.get(qa.id) : 0;
       const like = Math.max(globalLike, myLikes[qa.id] ? 1 : 0);
       const more = Math.max(globalMore, myReads[qa.id] ? 1 : 0);
-      // 좋아요는 더 비중 있게 (×2)
       return { qa, like, more, score: like * 2 + more };
-    }));
+    });
 
     // 점수 0보다 큰 것만, 인기순 정렬
     const popular = scored.filter(c => c.score > 0).sort((a, b) =>
