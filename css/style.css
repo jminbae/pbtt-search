@@ -830,7 +830,7 @@ main {
 .doctor-hero-info {
   display: flex;
   flex-direction: column;
-  padding: 96px 24px 56px 40px;  /* 위 더↑ 아래 더↑ — 멘트는 중앙 가까이, 메타는 살짝 위로 */
+  padding: 96px 24px 56px 72px;  /* 좌측 들여쓰기 ↑ */
   text-align: left;
 }
 .doctor-hero-meta {
