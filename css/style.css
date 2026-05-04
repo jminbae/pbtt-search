@@ -565,7 +565,7 @@ main {
     flex-wrap: nowrap;            /* 한 줄 고정 */
     overflow-x: auto;
     gap: 0 14px;
-    justify-content: flex-start;
+    justify-content: center;       /* 5개라 폭 여유 → 가운데 정렬, 좁은 화면이면 자연스레 좌측부터 스크롤 */
     padding: 0 4px;
     scrollbar-width: none;
   }
