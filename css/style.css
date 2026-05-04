@@ -608,12 +608,12 @@ main {
   pointer-events: none;
 }
 .cat-tab.tapping::after {
-  animation: cat-pop 0.5s ease-out;
+  animation: cat-pop 0.75s ease-out;
 }
 @keyframes cat-pop {
-  0%   { width: 0;     height: 0;     opacity: 0.6; }
-  60%  { width: 90px;  height: 90px;  opacity: 0.35; }
-  100% { width: 120px; height: 120px; opacity: 0; }
+  0%   { width: 0;     height: 0;     opacity: 0.85; }
+  50%  { width: 110px; height: 110px; opacity: 0.55; }
+  100% { width: 180px; height: 180px; opacity: 0; }
 }
 
 /* 활성 탭: 카테고리별 색 밑줄 + 텍스트 색 (배경/박스 없음) */

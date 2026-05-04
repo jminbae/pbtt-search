@@ -156,7 +156,7 @@
         _activeCategory = btn.dataset.cat;
         renderCategoryTabs();
         renderCategoryChips(_activeCategory);
-      }, 80);   // ripple 시작 후 살짝 지연 → 사용자에게 클릭 반응 인지
+      }, 140);   // ripple 충분히 시작 후 전환
     }, { once: true });   // 매 렌더마다 새로 등록
   }
 
