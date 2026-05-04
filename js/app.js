@@ -150,13 +150,13 @@
     tabs.addEventListener('click', e => {
       const btn = e.target.closest('.cat-tab');
       if (!btn) return;
-      // 톡톡 터지는 노랑 팝 효과 (DOM 재생성 전에 시각 피드백)
+      // 살짝 튕기는 bounce 피드백 후 카테고리 전환
       btn.classList.add('tapping');
       setTimeout(() => {
         _activeCategory = btn.dataset.cat;
         renderCategoryTabs();
         renderCategoryChips(_activeCategory);
-      }, 140);   // ripple 충분히 시작 후 전환
+      }, 120);
     }, { once: true });   // 매 렌더마다 새로 등록
   }
 
