@@ -4,10 +4,11 @@
 
 (function () {
   const { DOCTORS, VIDEOS, ALL_QAS, POPULAR_QUERIES, POPULAR_CATEGORIES, KEYWORD_CATEGORY, HOT_IDS, PICK_IDS, search, highlight, groupByVideo } = window.PBTT;
-  const CAT_LIST = ["리프팅", "주사시술", "피부증상", "홈케어", "화장품", "기타"];
-  const CAT_SLUG = { "리프팅":"lifting", "주사시술":"injection", "피부증상":"condition", "홈케어":"homecare", "화장품":"cosmetic", "기타":"other" };
-  // 디폴트 카테고리: 리프팅 ↔ 주사시술 랜덤
-  let _activeCategory = Math.random() < 0.5 ? "리프팅" : "주사시술";
+  const CAT_LIST = ["피부고민", "리프팅", "스킨부스터", "홈케어", "피부상식"];
+  const CAT_SLUG = { "피부고민":"condition", "리프팅":"lifting", "스킨부스터":"injection", "홈케어":"homecare", "피부상식":"other" };
+  // 디폴트 카테고리: 피부고민 ↔ 리프팅 ↔ 스킨부스터 중 랜덤
+  const _defaults = ["피부고민", "리프팅", "스킨부스터"];
+  let _activeCategory = _defaults[Math.floor(Math.random() * _defaults.length)];
 
   // ====== Firebase 설정 (사용자가 README에 따라 채워 넣음) ======
   // 비어 있으면 댓글 기능은 "준비 중"으로 표시됩니다.
