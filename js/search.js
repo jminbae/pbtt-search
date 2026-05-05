@@ -87,22 +87,22 @@
     const doctorNorm = normalize(qa.doctor);
     const keywordsNorm = qa.keywords.map(normalize);
 
-    // 우선순위 계층: 질문(제목) > 키워드 > 답변
-    // 같은 tier 내에서는 매칭 빈도가 많을수록 점수가 높아져 더 위로 정렬됨
-    // 영상 메타 topic은 제외 (영상 토픽이 키워드와 다른 경우가 많아 노이즈)
+    // 우선순위 계층: 키워드 > 질문(제목) > 답변
+    // 키워드는 글의 주제와 직결되므로 가장 높은 가중치.
+    // (영상 메타 topic은 제외 - 영상 토픽이 키워드와 다른 경우가 많아 노이즈)
     for (const token of queryTokens) {
       if (!token) continue;
       const tokenRe = new RegExp(escapeRegex(token), 'g');
 
-      // [Tier 1] 질문(Q&A 제목)에 있으면 최우선 (빈도 × 1000)
-      const questionHits = (questionNorm.match(tokenRe) || []).length;
-      if (questionHits > 0) score += 1000 * questionHits;
-
-      // [Tier 2] 키워드 배열 일치 (여러 키워드 중복 매칭 시 누적)
+      // [Tier 1] 키워드 배열 일치 (가장 높은 가중치 - 글 주제 직결)
       for (const kw of keywordsNorm) {
-        if (kw === token) score += 500;
-        else if (kw.includes(token) || token.includes(kw)) score += 300;
+        if (kw === token) score += 1000;
+        else if (kw.includes(token) || token.includes(kw)) score += 600;
       }
+
+      // [Tier 2] 질문(Q&A 제목)에 등장 (빈도 × 500)
+      const questionHits = (questionNorm.match(tokenRe) || []).length;
+      if (questionHits > 0) score += 500 * questionHits;
 
       // [Tier 3] 답변 본문 매칭: 등장 여부만 (빈도 무시), 100점
       if (answerNorm.match(tokenRe)) score += 100;
@@ -111,9 +111,9 @@
       if (doctorNorm.includes(token)) score += 800;
     }
 
-    // 보너스: 원본 검색어 전체가 질문에 정확히 들어가면 큰 가중치
+    // 보너스: 원본 검색어 전체가 질문에 정확히 들어가면 가중치
     if (rawNorm.length >= 2) {
-      if (questionNorm.includes(rawNorm)) score += 500;
+      if (questionNorm.includes(rawNorm)) score += 300;
     }
 
     // n-gram bigram fallback (오타/부분어 보강)

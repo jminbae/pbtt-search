@@ -148,17 +148,32 @@
       const active = cat === _activeCategory ? ' active' : '';
       return `<button type="button" class="cat-tab cat-${slug}${active}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>`;
     }).join('');
-    tabs.addEventListener('click', e => {
-      const btn = e.target.closest('.cat-tab');
-      if (!btn) return;
-      // 살짝 튕기는 bounce 피드백 후 카테고리 전환
-      btn.classList.add('tapping');
-      setTimeout(() => {
-        _activeCategory = btn.dataset.cat;
-        renderCategoryTabs();
-        renderCategoryChips(_activeCategory);
-      }, 120);
-    }, { once: true });   // 매 렌더마다 새로 등록
+    // 클릭 핸들러는 부모(tabs)에 한 번만 등록 (innerHTML 다시 그려도 부모는 유지됨)
+    // — 이전 `{ once: true }` 패턴이 setTimeout 동안 listener 사라져 빠른 연타 시 먹통 원인이었음
+    if (!tabs.dataset.bound) {
+      tabs.dataset.bound = '1';
+      tabs.addEventListener('click', e => {
+        const btn = e.target.closest('.cat-tab');
+        if (!btn) return;
+        const cat = btn.dataset.cat;
+        if (!cat) return;
+        // 같은 탭 다시 누르면 무시 (애니메이션만)
+        if (cat === _activeCategory) {
+          btn.classList.remove('tapping');
+          void btn.offsetWidth;       // reflow → 같은 탭 연타도 애니메이션 재트리거
+          btn.classList.add('tapping');
+          setTimeout(() => btn.classList.remove('tapping'), 450);
+          return;
+        }
+        // 살짝 튕기는 grow 피드백 후 카테고리 전환
+        btn.classList.add('tapping');
+        setTimeout(() => {
+          _activeCategory = cat;
+          renderCategoryTabs();
+          renderCategoryChips(_activeCategory);
+        }, 120);
+      });
+    }
   }
 
   function renderCategoryChips(cat) {
