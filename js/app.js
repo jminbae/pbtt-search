@@ -310,8 +310,8 @@
           <span itemprop="text">${answerHtml}</span>
         </div>
         ${isSinglePage ? '' : '<button type="button" class="toggle-more">더보기 ▾</button>'}
-        <a class="yt-original" href="${qa.youtubeUrl}" target="_blank" rel="noopener">
-          ▶ 영상 보러가기
+        <a class="yt-original" href="${qa.startTime ? `${qa.youtubeUrl}${qa.youtubeUrl.includes('?') ? '&' : '?'}t=${qa.startTime}` : qa.youtubeUrl}" target="_blank" rel="noopener">
+          ▶ 영상 보러가기${qa.startTime ? ` (${Math.floor(qa.startTime/60)}:${String(qa.startTime%60).padStart(2,'0')}부터)` : ''}
         </a>
         <div class="tags">${tags}</div>
         <div class="actions">
