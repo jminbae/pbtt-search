@@ -557,7 +557,7 @@ main {
 .cat-tabs {
   border-bottom: 1px solid var(--border);
   gap: 8px 28px;
-  margin-bottom: 8px;       /* 16px → 8px : 탭 밑줄과 첫 칩 줄 간격 좁힘 */
+  margin-bottom: 14px;      /* 선 위 padding(7px)과 시각적 균형 */
   padding-bottom: 0;
 }
 @media (max-width: 600px) {
@@ -568,7 +568,7 @@ main {
     justify-content: center;
     padding: 0 4px;
     scrollbar-width: none;
-    margin-bottom: 6px;
+    margin-bottom: 12px;          /* 선 위 padding(6px)과 시각적 균형 */
   }
   .cat-tabs::-webkit-scrollbar { display: none; }
   .cat-tab {
