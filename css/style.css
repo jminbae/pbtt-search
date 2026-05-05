@@ -557,7 +557,7 @@ main {
 .cat-tabs {
   border-bottom: 1px solid var(--border);
   gap: 8px 28px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;       /* 16px → 8px : 탭 밑줄과 첫 칩 줄 간격 좁힘 */
   padding-bottom: 0;
 }
 @media (max-width: 600px) {
@@ -565,20 +565,21 @@ main {
     flex-wrap: nowrap;            /* 한 줄 고정 */
     overflow-x: auto;
     gap: 0 14px;
-    justify-content: center;       /* 5개라 폭 여유 → 가운데 정렬, 좁은 화면이면 자연스레 좌측부터 스크롤 */
+    justify-content: center;
     padding: 0 4px;
     scrollbar-width: none;
+    margin-bottom: 6px;
   }
   .cat-tabs::-webkit-scrollbar { display: none; }
   .cat-tab {
     flex-shrink: 0;
-    padding: 8px 2px;
+    padding: 6px 2px;       /* 8px → 6px : 탭 텍스트와 밑줄 간격도 살짝 좁힘 */
     font-size: 13px;
   }
 }
 .cat-tab {
   position: relative;
-  padding: 10px 4px;
+  padding: 7px 4px;          /* 10px → 7px */
   border: none;
   background: none;
   color: var(--text-secondary);
