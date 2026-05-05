@@ -717,8 +717,9 @@
       url
     };
 
-    // 모바일/지원 환경: OS 공유 시트
-    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+    // 모바일에서만 OS 공유 시트 사용 (데스크탑은 항상 링크 복사)
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent);
+    if (isMobile && navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
       navigator.share(shareData).catch((err) => {
         // AbortError는 사용자가 취소한 것이므로 무시
         if (err && err.name !== 'AbortError') {
@@ -729,7 +730,7 @@
       return;
     }
 
-    // 데스크톱 등 미지원 환경: 클립보드 복사
+    // 데스크톱: 항상 클립보드 복사
     copyToClipboard(url);
   }
 
